@@ -1,0 +1,585 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  SIGSEGV (0xb) at pc=0x00007ff5b8a22e2b, pid=7766, tid=140690870646528
+#
+# JRE version: 6.0_27-b27
+# Java VM: OpenJDK 64-Bit Server VM (20.0-b12 mixed mode linux-amd64 compressed oops)
+# Derivative: IcedTea6 1.12.5
+# Distribution: Ubuntu 12.04 LTS, package 6b27-1.12.5-0ubuntu0.12.04.1
+# Problematic frame:
+# C  [libxcb.so.1+0x9e2b]  xcb_writev+0x1b
+#
+# If you would like to submit a bug report, please include
+# instructions how to reproduce the bug and visit:
+#   https://bugs.launchpad.net/ubuntu/+source/openjdk-6/
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread is native thread
+
+siginfo:si_signo=SIGSEGV: si_errno=0, si_code=1 (SEGV_MAPERR), si_addr=0x0000000000000000
+
+Registers:
+RAX=0x00007ff5b95896e0, RBX=0x00007ff508000920, RCX=0x0000000000000001, RDX=0x0000000000000003
+RSP=0x00007ff5255e2c20, RBP=0x0000000000000000, RSI=0x00007ff5255e2c70, RDI=0x0000000000000000
+R8 =0x00007ff5255e2eac, R9 =0x00007ff5255e2eb0, R10=0x0000000000000000, R11=0x0000000000000000
+R12=0x0000000000000000, R13=0x0000000000000000, R14=0x00007ff5255e2ca0, R15=0x00007ff5255e2ea0
+RIP=0x00007ff5b8a22e2b, EFLAGS=0x0000000000010202, CSGSFS=0x0000000000000033, ERR=0x0000000000000004
+  TRAPNO=0x000000000000000e
+
+Top of Stack: (sp=0x00007ff5255e2c20)
+0x00007ff5255e2c20:   0000000000032361 ffffffff255e2c40
+0x00007ff5255e2c30:   00007ff508003100 00007ff508000920
+0x00007ff5255e2c40:   0000000000000000 0000000000000000
+0x00007ff5255e2c50:   0000000000000000 00007ff5b9293ab7
+0x00007ff5255e2c60:   0000000000000000 0000000000000001
+0x00007ff5255e2c70:   00007ff508007b00 0000000000000008
+0x00007ff5255e2c80:   0000000000000000 0000000000000000
+0x00007ff5255e2c90:   00007ff5b95896e0 0000000000000000
+0x00007ff5255e2ca0:   00007ff5255e2d50 00007ff508000920
+0x00007ff5255e2cb0:   00007ff5255e2d50 0000000000000000
+0x00007ff5255e2cc0:   00007ff5255e2e98 00007ff5255e2eb0
+0x00007ff5255e2cd0:   00007ff5255e2ea0 00007ff5b9293feb
+0x00007ff5255e2ce0:   0000000000000003 00007ff5b927a8b2
+0x00007ff5255e2cf0:   0000000000000000 00000001000000e3
+0x00007ff5255e2d00:   0000000004380f00 0000000000000000
+0x00007ff5255e2d10:   0000000000000000 00007ff508000920
+0x00007ff5255e2d20:   00000000000000e3 00007ff5255e2eac
+0x00007ff5255e2d30:   00007ff5255e2e98 00007ff5255e2eb0
+0x00007ff5255e2d40:   00007ff5255e2ea0 00007ff5b9289e69
+0x00007ff5255e2d50:   0000000023610101 01c04192000000e3
+0x00007ff5255e2d60:   027f0c15027f0c15 0000000000000000
+0x00007ff5255e2d70:   00007ff5255e2eb8 00007ff5257e70a0
+0x00007ff5255e2d80:   00007ff5255e2eb4 00007ff5255e2ebc
+0x00007ff5255e2d90:   00007ff5255e2eb8 00000000000000e3
+0x00007ff5255e2da0:   0000000000000003 00007ff5255e56ed
+0x00007ff5255e2db0:   00007ff5255e2eb8 00007ff5255e2ebc
+0x00007ff5255e2dc0:   00007ff5255e2eb4 0000000000000000
+0x00007ff5255e2dd0:   0000000000000000 3a72b9d639888889
+0x00007ff5255e2de0:   0000000000000000 0000043800000f00
+0x00007ff5255e2df0:   0000001800000000 00007ff50800bb90
+0x00007ff5255e2e00:   00000000000000e3 0000000100000001
+0x00007ff5255e2e10:   0000000000000001 00000000ffffffff 
+
+Instructions: (pc=0x00007ff5b8a22e2b)
+0x00007ff5b8a22e0b:   5b 5d 41 5c c3 48 89 5c 24 e0 4c 89 64 24 f0 45
+0x00007ff5b8a22e1b:   31 e4 4c 89 6c 24 f8 48 89 6c 24 e8 48 83 ec 38
+0x00007ff5b8a22e2b:   44 8b 0f 48 89 fb 49 89 cd 45 85 c9 75 36 48 8d
+0x00007ff5b8a22e3b:   6f 18 89 14 24 48 89 74 24 08 48 89 ef e8 d3 f4 
+
+Register to memory mapping:
+
+RAX=
+[error occurred during error reporting (printing register info), id 0xb]
+
+Stack: [0x00007ff524de3000,0x00007ff5255e4000],  sp=0x00007ff5255e2c20,  free space=8191k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+C  [libxcb.so.1+0x9e2b]  xcb_writev+0x1b
+
+[error occurred during error reporting (printing native stack), id 0xb]
+
+
+---------------  P R O C E S S  ---------------
+
+VM state:at safepoint (shutting down)
+
+VM Mutex/Monitor currently owned by a thread:  ([mutex/lock_event])
+[0x00007ff5c4007420] Threads_lock - owner thread: 0x00007ff5c4139800
+
+Heap
+ par new generation   total 261952K, used 196642K [0x00000000b5a00000, 0x00000000c5a00000, 0x00000000c5b00000)
+  eden space 261760K,  75% used [0x00000000b5a00000, 0x00000000c1a08a20, 0x00000000c59a0000)
+  from space 192K,   0% used [0x00000000c59a0000, 0x00000000c59a0000, 0x00000000c59d0000)
+  to   space 192K,   0% used [0x00000000c59d0000, 0x00000000c59d0000, 0x00000000c5a00000)
+ concurrent mark-sweep generation total 262144K, used 48896K [0x00000000c5b00000, 0x00000000d5b00000, 0x00000000f5a00000)
+ concurrent-mark-sweep perm gen total 101116K, used 60969K [0x00000000f5a00000, 0x00000000fbcbf000, 0x0000000100000000)
+
+Code Cache  [0x00007ff5be000000, 0x00007ff5be950000, 0x00007ff5c4000000)
+ total_blobs=4446 nmethods=3938 adapters=441 free_code_cache=90955648 largest_free_block=448
+
+Dynamic libraries:
+00400000-00409000 r-xp 00000000 08:06 9012678                            /usr/lib/jvm/java-6-openjdk-amd64/jre/bin/java
+00608000-00609000 r--p 00008000 08:06 9012678                            /usr/lib/jvm/java-6-openjdk-amd64/jre/bin/java
+00609000-0060a000 rw-p 00009000 08:06 9012678                            /usr/lib/jvm/java-6-openjdk-amd64/jre/bin/java
+00c79000-00ce0000 rw-p 00000000 00:00 0                                  [heap]
+b5a00000-c5a00000 rw-p 00000000 00:00 0 
+c5a00000-c5b00000 rw-p 00000000 00:00 0 
+c5b00000-d5b00000 rw-p 00000000 00:00 0 
+d5b00000-f5a00000 rw-p 00000000 00:00 0 
+f5a00000-fbcbf000 rw-p 00000000 00:00 0 
+fbcbf000-100000000 rw-p 00000000 00:00 0 
+7ff4b4000000-7ff4b4021000 rw-p 00000000 00:00 0 
+7ff4b4021000-7ff4b8000000 ---p 00000000 00:00 0 
+7ff4bb3f4000-7ff4bb3f7000 ---p 00000000 00:00 0 
+7ff4bb3f7000-7ff4bb4f5000 rw-p 00000000 00:00 0 
+7ff4bb4f5000-7ff4bb4f8000 ---p 00000000 00:00 0 
+7ff4bb4f8000-7ff4bb5f6000 rw-p 00000000 00:00 0 
+7ff4bb5f6000-7ff4bb5f9000 ---p 00000000 00:00 0 
+7ff4bb5f9000-7ff4bb6f7000 rw-p 00000000 00:00 0 
+7ff4bb6f7000-7ff4bb6fa000 ---p 00000000 00:00 0 
+7ff4bb6fa000-7ff4bb7f8000 rw-p 00000000 00:00 0 
+7ff4bb7f8000-7ff4bb7fb000 ---p 00000000 00:00 0 
+7ff4bb7fb000-7ff4bb8f9000 rw-p 00000000 00:00 0 
+7ff4bb8f9000-7ff4bb8fc000 ---p 00000000 00:00 0 
+7ff4bb8fc000-7ff4bb9fa000 rw-p 00000000 00:00 0 
+7ff4bb9fa000-7ff4bb9fd000 ---p 00000000 00:00 0 
+7ff4bb9fd000-7ff4bbafb000 rw-p 00000000 00:00 0 
+7ff4bbafb000-7ff4bbafe000 ---p 00000000 00:00 0 
+7ff4bbafe000-7ff4bbbfc000 rw-p 00000000 00:00 0 
+7ff4bbbfc000-7ff4bbbff000 ---p 00000000 00:00 0 
+7ff4bbbff000-7ff4bbcfd000 rw-p 00000000 00:00 0 
+7ff4bbcfd000-7ff4bbd00000 ---p 00000000 00:00 0 
+7ff4bbd00000-7ff4bbdfe000 rw-p 00000000 00:00 0 
+7ff4bbdfe000-7ff4bbe01000 ---p 00000000 00:00 0 
+7ff4bbe01000-7ff4bbeff000 rw-p 00000000 00:00 0 
+7ff4bbeff000-7ff4bbf02000 ---p 00000000 00:00 0 
+7ff4bbf02000-7ff4bc000000 rw-p 00000000 00:00 0 
+7ff4bc000000-7ff4bc05a000 rw-p 00000000 00:00 0 
+7ff4bc05a000-7ff4c0000000 ---p 00000000 00:00 0 
+7ff4c0000000-7ff4c0032000 rw-p 00000000 00:00 0 
+7ff4c0032000-7ff4c4000000 ---p 00000000 00:00 0 
+7ff4c4000000-7ff4c4021000 rw-p 00000000 00:00 0 
+7ff4c4021000-7ff4c8000000 ---p 00000000 00:00 0 
+7ff4c8099000-7ff4c809c000 ---p 00000000 00:00 0 
+7ff4c809c000-7ff4c819a000 rw-p 00000000 00:00 0 
+7ff4c819a000-7ff4c819d000 ---p 00000000 00:00 0 
+7ff4c819d000-7ff4c829b000 rw-p 00000000 00:00 0 
+7ff4c829b000-7ff4c829e000 ---p 00000000 00:00 0 
+7ff4c829e000-7ff4c839c000 rw-p 00000000 00:00 0 
+7ff4c839c000-7ff4c839f000 ---p 00000000 00:00 0 
+7ff4c839f000-7ff4c849d000 rw-p 00000000 00:00 0 
+7ff4c849d000-7ff4c84a0000 ---p 00000000 00:00 0 
+7ff4c84a0000-7ff4c859e000 rw-p 00000000 00:00 0 
+7ff4c859e000-7ff4c85a1000 ---p 00000000 00:00 0 
+7ff4c85a1000-7ff4c869f000 rw-p 00000000 00:00 0 
+7ff4c869f000-7ff4c86a2000 ---p 00000000 00:00 0 
+7ff4c86a2000-7ff4c87a0000 rw-p 00000000 00:00 0 
+7ff4c87a0000-7ff4c87a3000 ---p 00000000 00:00 0 
+7ff4c87a3000-7ff4c88a1000 rw-p 00000000 00:00 0 
+7ff4c88a1000-7ff4c88a4000 ---p 00000000 00:00 0 
+7ff4c88a4000-7ff4c89a2000 rw-p 00000000 00:00 0 
+7ff4c89a2000-7ff4c89a5000 ---p 00000000 00:00 0 
+7ff4c89a5000-7ff4c8aa3000 rw-p 00000000 00:00 0 
+7ff4c8aa3000-7ff4c8aa6000 ---p 00000000 00:00 0 
+7ff4c8aa6000-7ff4c8ba4000 rw-p 00000000 00:00 0 
+7ff4c8ba4000-7ff4c8ba7000 ---p 00000000 00:00 0 
+7ff4c8ba7000-7ff4c8ca5000 rw-p 00000000 00:00 0 
+7ff4c8ca5000-7ff4c8ca6000 ---p 00000000 00:00 0 
+7ff4c8ca6000-7ff4c8d26000 rw-p 00000000 00:00 0 
+7ff4cf386000-7ff4cf398000 rw-s 00000000 00:12 1698                       /run/shm/jack-shm-registry
+7ff4cf3c2000-7ff4cf3c3000 ---p 00000000 00:00 0 
+7ff4cf3c3000-7ff4cf443000 rw-p 00000000 00:00 0 
+7ff4cf443000-7ff4cf446000 ---p 00000000 00:00 0 
+7ff4cf446000-7ff4cfc44000 rw-p 00000000 00:00 0 
+7ff4dfc45000-7ff4dfc48000 r-xp 00000000 08:06 526645                     /home/kane/projects/beatfn-live/target/native/linux/x86_64/GendynUGens.so
+7ff4dfc48000-7ff4dfe47000 ---p 00003000 08:06 526645                     /home/kane/projects/beatfn-live/target/native/linux/x86_64/GendynUGens.so
+7ff4dfe47000-7ff4dfe48000 r--p 00002000 08:06 526645                     /home/kane/projects/beatfn-live/target/native/linux/x86_64/GendynUGens.so
+7ff4dfe48000-7ff4dfe49000 rw-p 00003000 08:06 526645                     /home/kane/projects/beatfn-live/target/native/linux/x86_64/GendynUGens.so
+7ff4dfe49000-7ff4dfe4e000 r-xp 00000000 08:06 663020                     /usr/lib/ladspa/foo_transients_mono.so
+7ff4dfe4e000-7ff4e004d000 ---p 00005000 08:06 663020                     /usr/lib/ladspa/foo_transients_mono.so
+7ff4e004d000-7ff4e004e000 r--p 00004000 08:06 663020                     /usr/lib/ladspa/foo_transients_mono.so
+7ff4e004e000-7ff4e004f000 rw-p 00005000 08:06 663020                     /usr/lib/ladspa/foo_transients_mono.so
+7ff4e004f000-7ff4e0050000 r-xp 00000000 08:06 663047                     /usr/lib/ladspa/interpolator_1660.so
+7ff4e0050000-7ff4e0250000 ---p 00001000 08:06 663047                     /usr/lib/ladspa/interpolator_1660.so
+7ff4e0250000-7ff4e0251000 r--p 00001000 08:06 663047                     /usr/lib/ladspa/interpolator_1660.so
+7ff4e0251000-7ff4e0252000 rw-p 00002000 08:06 663047                     /usr/lib/ladspa/interpolator_1660.so
+7ff4e0252000-7ff4e025d000 r-xp 00000000 08:06 663033                     /usr/lib/ladspa/guitarix_compressor.so
+7ff4e025d000-7ff4e045d000 ---p 0000b000 08:06 663033                     /usr/lib/ladspa/guitarix_compressor.so
+7ff4e045d000-7ff4e045e000 r--p 0000b000 08:06 663033                     /usr/lib/ladspa/guitarix_compressor.so
+7ff4e045e000-7ff4e045f000 rw-p 0000c000 08:06 663033                     /usr/lib/ladspa/guitarix_compressor.so
+7ff4e045f000-7ff4e0461000 r-xp 00000000 08:06 663010                     /usr/lib/ladspa/flanger_1191.so
+7ff4e0461000-7ff4e0660000 ---p 00002000 08:06 663010                     /usr/lib/ladspa/flanger_1191.so
+7ff4e0660000-7ff4e0661000 r--p 00001000 08:06 663010                     /usr/lib/ladspa/flanger_1191.so
+7ff4e0661000-7ff4e0662000 rw-p 00002000 08:06 663010                     /usr/lib/ladspa/flanger_1191.so
+7ff4e0662000-7ff4e0665000 r-xp 00000000 08:06 663087                     /usr/lib/ladspa/quantiser50_2028.so
+7ff4e0665000-7ff4e0864000 ---p 00003000 08:06 663087                     /usr/lib/ladspa/quantiser50_2028.so
+7ff4e0864000-7ff4e0865000 r--p 00002000 08:06 663087                     /usr/lib/ladspa/quantiser50_2028.so
+7ff4e0865000-7ff4e0866000 rw-p 00003000 08:06 663087                     /usr/lib/ladspa/quantiser50_2028.so
+7ff4e0866000-7ff4e0868000 r-xp 00000000 08:06 663073                     /usr/lib/ladspa/mvchpf24.so
+7ff4e0868000-7ff4e0a67000 ---p 00002000 08:06 663073                     /usr/lib/ladspa/mvchpf24.so
+7ff4e0a67000-7ff4e0a68000 r--p 00001000 08:06 663073                     /usr/lib/ladspa/mvchpf24.so
+7ff4e0a68000-7ff4e0a69000 rw-p 00002000 08:06 663073                     /usr/lib/ladspa/mvchpf24.so
+7ff4e0a69000-7ff4e0a6c000 r-xp 00000000 08:06 663053                     /usr/lib/ladspa/inv_tube.so
+7ff4e0a6c000-7ff4e0c6b000 ---p 00003000 08:06 663053                     /usr/lib/ladspa/inv_tube.so
+7ff4e0c6b000-7ff4e0c6c000 rw-p 00002000 08:06 663053                     /usr/lib/ladspa/inv_tube.so
+7ff4e0c6c000-7ff4e0c6e000 r-xp 00000000 08:06 663022                     /usr/lib/ladspa/foverdrive_1196.so
+7ff4e0c6e000-7ff4e0e6d000 ---p 00002000 08:06 663022                     /usr/lib/ladspa/foverdrive_1196.so
+7ff4e0e6d000-7ff4e0e6e000 r--p 00001000 08:06 663022                     /usr/lib/ladspa/foverdrive_1196.so
+7ff4e0e6e000-7ff4e0e6f000 rw-p 00002000 08:06 663022                     /usr/lib/ladspa/foverdrive_1196.so
+7ff4e0e6f000-7ff4e0e72000 r-xp 00000000 08:06 663085                     /usr/lib/ladspa/quantiser100_2029.so
+7ff4e0e72000-7ff4e1071000 ---p 00003000 08:06 663085                     /usr/lib/ladspa/quantiser100_2029.so
+7ff4e1071000-7ff4e1072000 r--p 00002000 08:06 663085                     /usr/lib/ladspa/quantiser100_2029.so
+7ff4e1072000-7ff4e1073000 rw-p 00003000 08:06 663085                     /usr/lib/ladspa/quantiser100_2029.so
+7ff4e1073000-7ff4e1078000 r-xp 00000000 08:06 662961                     /usr/lib/ladspa/ambisonic0.so
+7ff4e1078000-7ff4e1278000 ---p 00005000 08:06 662961                     /usr/lib/ladspa/ambisonic0.so
+7ff4e1278000-7ff4e1279000 r--p 00005000 08:06 662961                     /usr/lib/ladspa/ambisonic0.so
+7ff4e1279000-7ff4e127a000 rw-p 00006000 08:06 662961                     /usr/lib/ladspa/ambisonic0.so
+7ff4e127a000-7ff4e127f000 r-xp 00000000 08:06 663074                     /usr/lib/ladspa/mvclpf24.so
+7ff4e127f000-7ff4e147e000 ---p 00005000 08:06 663074                     /usr/lib/ladspa/mvclpf24.so
+7ff4e147e000-7ff4e147f000 r--p 00004000 08:06 663074                     /usr/lib/ladspa/mvclpf24.so
+7ff4e147f000-7ff4e1480000 rw-p 00005000 08:06 663074                     /usr/lib/ladspa/mvclpf24.so
+7ff4e1480000-7ff4e148b000 r-xp 00000000 08:06 663036                     /usr/lib/ladspa/guitarix_echo.so
+7ff4e148b000-7ff4e168b000 ---p 0000b000 08:06 663036                     /usr/lib/ladspa/guitarix_echo.so
+7ff4e168b000-7ff4e168c000 r--p 0000b000 08:06 663036                     /usr/lib/ladspa/guitarix_echo.so
+7ff4e168c000-7ff4e168d000 rw-p 0000c000 08:06 663036                     /usr/lib/ladspa/guitarix_echo.so
+7ff4e168d000-7ff4e1690000 r-xp 00000000 08:06 663098                     /usr/lib/ladspa/sc1_1425.so
+7ff4e1690000-7ff4e188f000 ---p 00003000 08:06 663098                     /usr/lib/ladspa/sc1_1425.so
+7ff4e188f000-7ff4e1890000 r--p 00002000 08:06 663098                     /usr/lib/ladspa/sc1_1425.so
+7ff4e1890000-7ff4e1891000 rw-p 00003000 08:06 663098                     /usr/lib/ladspa/sc1_1425.so
+7ff4e1891000-7ff4e1893000 rw-p 00000000 00:00 0 
+7ff4e1893000-7ff4e1895000 r-xp 00000000 08:06 658692                     /usr/lib/ladspa/sine.so
+7ff4e1895000-7ff4e1a94000 ---p 00002000 08:06 658692                     /usr/lib/ladspa/sine.so
+7ff4e1a94000-7ff4e1a95000 r--p 00001000 08:06 658692                     /usr/lib/ladspa/sine.so
+7ff4e1a95000-7ff4e1a96000 rw-p 00002000 08:06 658692                     /usr/lib/ladspa/sine.so
+7ff4e1a96000-7ff4e1a9b000 r-xp 00000000 08:06 662967                     /usr/lib/ladspa/analogue_osc_1416.so
+7ff4e1a9b000-7ff4e1c9a000 ---p 00005000 08:06 662967                     /usr/lib/ladspa/analogue_osc_1416.so
+7ff4e1c9a000-7ff4e1c9b000 r--p 00004000 08:06 662967                     /usr/lib/ladspa/analogue_osc_1416.so
+7ff4e1c9b000-7ff4e1c9c000 rw-p 00005000 08:06 662967                     /usr/lib/ladspa/analogue_osc_1416.so
+7ff4e1c9c000-7ff4e1c9e000 r-xp 00000000 08:06 663105                     /usr/lib/ladspa/sequencer32_1676.so
+7ff4e1c9e000-7ff4e1e9d000 ---p 00002000 08:06 663105                     /usr/lib/ladspa/sequencer32_1676.so
+7ff4e1e9d000-7ff4e1e9e000 r--p 00001000 08:06 663105                     /usr/lib/ladspa/sequencer32_1676.so
+7ff4e1e9e000-7ff4e1e9f000 rw-p 00002000 08:06 663105                     /usr/lib/ladspa/sequencer32_1676.so
+7ff4e1e9f000-7ff4e1ea2000 r-xp 00000000 08:06 663092                     /usr/lib/ladspa/retro_flange_1208.so
+7ff4e1ea2000-7ff4e20a1000 ---p 00003000 08:06 663092                     /usr/lib/ladspa/retro_flange_1208.so
+7ff4e20a1000-7ff4e20a2000 r--p 00002000 08:06 663092                     /usr/lib/ladspa/retro_flange_1208.so
+7ff4e20a2000-7ff4e20a3000 rw-p 00003000 08:06 663092                     /usr/lib/ladspa/retro_flange_1208.so
+7ff4e20a3000-7ff4e20a5000 r-xp 00000000 08:06 662974                     /usr/lib/ladspa/bode_shifter_1431.so
+7ff4e20a5000-7ff4e22a4000 ---p 00002000 08:06 662974                     /usr/lib/ladspa/bode_shifter_1431.so
+7ff4e22a4000-7ff4e22a5000 r--p 00001000 08:06 662974                     /usr/lib/ladspa/bode_shifter_1431.so
+7ff4e22a5000-7ff4e22a6000 rw-p 00002000 08:06 662974                     /usr/lib/ladspa/bode_shifter_1431.so
+7ff4e22a6000-7ff4e22a8000 r-xp 00000000 08:06 663018                     /usr/lib/ladspa/foo_saturator.so
+7ff4e22a8000-7ff4e24a7000 ---p 00002000 08:06 663018                     /usr/lib/ladspa/foo_saturator.so
+7ff4e24a7000-7ff4e24a8000 r--p 00001000 08:06 663018                     /usr/lib/ladspa/foo_saturator.so
+7ff4e24a8000-7ff4e24a9000 rw-p 00002000 08:06 663018                     /usr/lib/ladspa/foo_saturator.so
+7ff4e24a9000-7ff4e24ad000 r-xp 00000000 08:06 662998                     /usr/lib/ladspa/delayorama_1402.so
+7ff4e24ad000-7ff4e26ac000 ---p 00004000 08:06 662998                     /usr/lib/ladspa/delayorama_1402.so
+7ff4e26ac000-7ff4e26ad000 r--p 00003000 08:06 662998                     /usr/lib/ladspa/delayorama_1402.so
+7ff4e26ad000-7ff4e26ae000 rw-p 00004000 08:06 662998                     /usr/lib/ladspa/delayorama_1402.so
+7ff4e26ae000-7ff4e26b5000 r-xp 00000000 08:06 662977                     /usr/lib/ladspa/butterworth_1902.so
+7ff4e26b5000-7ff4e28b4000 ---p 00007000 08:06 662977                     /usr/lib/ladspa/butterworth_1902.so
+7ff4e28b4000-7ff4e28b5000 r--p 00006000 08:06 662977                     /usr/lib/ladspa/butterworth_1902.so
+7ff4e28b5000-7ff4e28b6000 rw-p 00007000 08:06 662977                     /usr/lib/ladspa/butterworth_1902.so
+7ff4e28b6000-7ff4e28b8000 r-xp 00000000 08:06 658694                     /usr/lib/ladspa/filter.so
+7ff4e28b8000-7ff4e2ab7000 ---p 00002000 08:06 658694                     /usr/lib/ladspa/filter.so
+7ff4e2ab7000-7ff4e2ab8000 rw-p 00001000 08:06 658694                     /usr/lib/ladspa/filter.so
+7ff4e2ab8000-7ff4e2ac4000 r-xp 00000000 08:06 663037                     /usr/lib/ladspa/guitarix_freeverb.so
+7ff4e2ac4000-7ff4e2cc3000 ---p 0000c000 08:06 663037                     /usr/lib/ladspa/guitarix_freeverb.so
+7ff4e2cc3000-7ff4e2cc4000 r--p 0000b000 08:06 663037                     /usr/lib/ladspa/guitarix_freeverb.so
+7ff4e2cc4000-7ff4e2cc5000 rw-p 0000c000 08:06 663037                     /usr/lib/ladspa/guitarix_freeverb.so
+7ff4e2cc5000-7ff4e2cc7000 r-xp 00000000 08:06 662995                     /usr/lib/ladspa/decimator_1202.so
+7ff4e2cc7000-7ff4e2ec6000 ---p 00002000 08:06 662995                     /usr/lib/ladspa/decimator_1202.so
+7ff4e2ec6000-7ff4e2ec7000 r--p 00001000 08:06 662995                     /usr/lib/ladspa/decimator_1202.so
+7ff4e2ec7000-7ff4e2ec8000 rw-p 00002000 08:06 662995                     /usr/lib/ladspa/decimator_1202.so
+7ff4e2ec8000-7ff4e2ece000 r-xp 00000000 08:06 662959                     /usr/lib/ladspa/allpass_1895.so
+7ff4e2ece000-7ff4e30cd000 ---p 00006000 08:06 662959                     /usr/lib/ladspa/allpass_1895.so
+7ff4e30cd000-7ff4e30ce000 r--p 00005000 08:06 662959                     /usr/lib/ladspa/allpass_1895.so
+7ff4e30ce000-7ff4e30cf000 rw-p 00006000 08:06 662959                     /usr/lib/ladspa/allpass_1895.so
+7ff4e30cf000-7ff4e30d4000 r-xp 00000000 08:06 663024                     /usr/lib/ladspa/g2reverb.so
+7ff4e30d4000-7ff4e32d3000 ---p 00005000 08:06 663024                     /usr/lib/ladspa/g2reverb.so
+7ff4e32d3000-7ff4e32d4000 rw-p 00004000 08:06 663024                     /usr/lib/ladspa/g2reverb.so
+7ff4e32d4000-7ff4e32d6000 r-xp 00000000 08:06 662969                     /usr/lib/ladspa/autowah.so
+7ff4e32d6000-7ff4e34d5000 ---p 00002000 08:06 662969                     /usr/lib/ladspa/autowah.so
+7ff4e34d5000-7ff4e34d6000 r--p 00001000 08:06 662969                     /usr/lib/ladspa/autowah.so
+7ff4e34d6000-7ff4e34d7000 rw-p 00002000 08:06 662969                     /usr/lib/ladspa/autowah.so
+7ff4e34d7000-7ff4e34db000 r-xp 00000000 08:06 663166                     /usr/lib/ladspa/zyneq10band.so
+7ff4e34db000-7ff4e36da000 ---p 00004000 08:06 663166                     /usr/lib/ladspa/zyneq10band.so
+7ff4e36da000-7ff4e36db000 r--p 00003000 08:06 663166                     /usr/lib/ladspa/zyneq10band.so
+7ff4e36db000-7ff4e36dc000 rw-p 00004000 08:06 663166                     /usr/lib/ladspa/zyneq10band.so
+7ff4e36dc000-7ff4e36de000 r-xp 00000000 08:06 663124                     /usr/lib/ladspa/t00b_limiter.so
+7ff4e36de000-7ff4e38dd000 ---p 00002000 08:06 663124                     /usr/lib/ladspa/t00b_limiter.so
+7ff4e38dd000-7ff4e38de000 r--p 00001000 08:06 663124                     /usr/lib/ladspa/t00b_limiter.so
+7ff4e38de000-7ff4e38df000 rw-p 00002000 08:06 663124                     /usr/lib/ladspa/t00b_limiter.so
+7ff4e38df000-7ff4e38e2000 r-xp 00000000 08:06 662989                     /usr/lib/ladspa/cs_phaser.so
+7ff4e38e2000-7ff4e3ae1000 ---p 00003000 08:06 662989                     /usr/lib/ladspa/cs_phaser.so
+7ff4e3ae1000-7ff4e3ae2000 r--p 00002000 08:06 662989                     /usr/lib/ladspa/cs_phaser.so
+7ff4e3ae2000-7ff4e3ae3000 rw-p 00003000 08:06 662989                     /usr/lib/ladspa/cs_phaser.so
+7ff4e3ae3000-7ff4e3ae7000 r-xp 00000000 08:06 662963                     /usr/lib/ladspa/ambisonic2.so
+7ff4e3ae7000-7ff4e3ce7000 ---p 00004000 08:06 662963                     /usr/lib/ladspa/ambisonic2.so
+7ff4e3ce7000-7ff4e3ce8000 r--p 00004000 08:06 662963                     /usr/lib/ladspa/ambisonic2.so
+7ff4e3ce8000-7ff4e3ce9000 rw-p 00005000 08:06 662963                     /usr/lib/ladspa/ambisonic2.so
+7ff4e3ce9000-7ff4e3cea000 r-xp 00000000 08:06 663113                     /usr/lib/ladspa/slew_limiter_2743.so
+7ff4e3cea000-7ff4e3eea000 ---p 00001000 08:06 663113                     /usr/lib/ladspa/slew_limiter_2743.so
+7ff4e3eea000-7ff4e3eeb000 r--p 00001000 08:06 663113                     /usr/lib/ladspa/slew_limiter_2743.so
+7ff4e3eeb000-7ff4e3eec000 rw-p 00002000 08:06 663113                     /usr/lib/ladspa/slew_limiter_2743.so
+7ff4e3eec000-7ff4e3eed000 r-xp 00000000 08:06 658693                     /usr/lib/ladspa/delay.so
+7ff4e3eed000-7ff4e40ec000 ---p 00001000 08:06 658693                     /usr/lib/ladspa/delay.so
+7ff4e40ec000-7ff4e40ed000 rw-p 00000000 08:06 658693                     /usr/lib/ladspa/delay.so
+7ff4e40ed000-7ff4e40ef000 r-xp 00000000 08:06 663125                     /usr/lib/ladspa/tap_autopan.so
+7ff4e40ef000-7ff4e42ee000 ---p 00002000 08:06 663125                     /usr/lib/ladspa/tap_autopan.so
+7ff4e42ee000-7ff4e42ef000 r--p 00001000 08:06 663125                     /usr/lib/ladspa/tap_autopan.so
+7ff4e42ef000-7ff4e42f0000 rw-p 00002000 08:06 663125                     /usr/lib/ladspa/tap_autopan.so
+7ff4e42f0000-7ff4e42f1000 rw-p 00000000 00:00 0 
+7ff4e42f1000-7ff4e42f6000 r-xp 00000000 08:06 663159                     /usr/lib/ladspa/wasp-x-shaper.so
+7ff4e42f6000-7ff4e44f5000 ---p 00005000 08:06 663159                     /usr/lib/ladspa/wasp-x-shaper.so
+7ff4e44f5000-7ff4e44f6000 rw-p 00004000 08:06 663159                     /usr/lib/ladspa/wasp-x-shaper.so
+7ff4e44f6000-7ff4e44f8000 r-xp 00000000 08:06 663014                     /usr/lib/ladspa/foo_chop.so
+7ff4e44f8000-7ff4e46f8000 ---p 00002000 08:06 663014                     /usr/lib/ladspa/foo_chop.so
+7ff4e46f8000-7ff4e46f9000 r--p 00002000 08:06 663014                     /usr/lib/ladspa/foo_chop.so
+7ff4e46f9000-7ff4e46fa000 rw-p 00003000 08:06 663014                     /usr/lib/ladspa/foo_chop.so
+7ff4e46fa000-7ff4e46fc000 r-xp 00000000 08:06 663091                     /usr/lib/ladspa/ratio_2034.so
+7ff4e46fc000-7ff4e48fb000 ---p 00002000 08:06 663091                     /usr/lib/ladspa/ratio_2034.so
+7ff4e48fb000-7ff4e48fc000 r--p 00001000 08:06 663091                     /usr/lib/ladspa/ratio_2034.so
+7ff4e48fc000-7ff4e48fd000 rw-p 00002000 08:06 663091                     /usr/lib/ladspa/ratio_2034.so
+7ff4e48fd000-7ff4e48ff000 r-xp 00000000 08:06 663104                     /usr/lib/ladspa/sequencer16_1677.so
+7ff4e48ff000-7ff4e4afe000 ---p 00002000 08:06 663104                     /usr/lib/ladspa/sequencer16_1677.so
+7ff4e4afe000-7ff4e4aff000 r--p 00001000 08:06 663104                     /usr/lib/ladspa/sequencer16_1677.so
+7ff4e4aff000-7ff4e4b00000 rw-p 00002000 08:06 663104                     /usr/lib/ladspa/sequencer16_1677.so
+7ff4e4b00000-7ff4e4b02000 r-xp 00000000 08:06 663111                     /usr/lib/ladspa/single_para_1203.so
+7ff4e4b02000-7ff4e4d01000 ---p 00002000 08:06 663111                     /usr/lib/ladspa/single_para_1203.so
+7ff4e4d01000-7ff4e4d02000 r--p 00001000 08:06 663111                     /usr/lib/ladspa/single_para_1203.so
+7ff4e4d02000-7ff4e4d03000 rw-p 00002000 08:06 663111                     /usr/lib/ladspa/single_para_1203.so
+7ff4e4d03000-7ff4e4d05000 r-xp 00000000 08:06 663015                     /usr/lib/ladspa/foo_driver.so
+7ff4e4d05000-7ff4e4f04000 ---p 00002000 08:06 663015                     /usr/lib/ladspa/foo_driver.so
+7ff4e4f04000-7ff4e4f05000 r--p 00001000 08:06 663015                     /usr/lib/ladspa/foo_driver.so
+7ff4e4f05000-7ff4e4f06000 rw-p 00002000 08:06 663015                     /usr/lib/ladspa/foo_driver.so
+7ff4e4f06000-7ff4e4f08000 r-xp 00000000 08:06 663165                     /usr/lib/ladspa/zynchorus.so
+7ff4e4f08000-7ff4e5108000 ---p 00002000 08:06 663165                     /usr/lib/ladspa/zynchorus.so
+7ff4e5108000-7ff4e5109000 r--p 00002000 08:06 663165                     /usr/lib/ladspa/zynchorus.so
+7ff4e5109000-7ff4e510a000 rw-p 00003000 08:06 663165                     /usr/lib/ladspa/zynchorus.so
+7ff4e510a000-7ff4e510b000 r-xp 00000000 08:06 663081                     /usr/lib/ladspa/power_4400.so
+7ff4e510b000-7ff4e530a000 ---p 00001000 08:06 663081                     /usr/lib/ladspa/power_4400.so
+7ff4e530a000-7ff4e530b000 r--p 00000000 08:06 663081                     /usr/lib/ladspa/power_4400.so
+7ff4e530b000-7ff4e530c000 rw-p 00001000 08:06 663081                     /usr/lib/ladspa/power_4400.so
+7ff4e530c000-7ff4e530e000 r-xp 00000000 08:06 662999                     /usr/lib/ladspa/difference_2030.so
+7ff4e530e000-7ff4e550d000 ---p 00002000 08:06 662999                     /usr/lib/ladspa/difference_2030.so
+7ff4e550d000-7ff4e550e000 r--p 00001000 08:06 662999                     /usr/lib/ladspa/difference_2030.so
+7ff4e550e000-7ff4e550f000 rw-p 00002000 08:06 662999                     /usr/lib/ladspa/difference_2030.so
+7ff4e550f000-7ff4e5511000 r-xp 00000000 08:06 663012                     /usr/lib/ladspa/fmod_1656.so
+7ff4e5511000-7ff4e5710000 ---p 00002000 08:06 663012                     /usr/lib/ladspa/fmod_1656.so
+7ff4e5710000-7ff4e5711000 r--p 00001000 08:06 663012                     /usr/lib/ladspa/fmod_1656.so
+7ff4e5711000-7ff4e5712000 rw-p 00002000 08:06 663012                     /usr/lib/ladspa/fmod_1656.so
+7ff4e5712000-7ff4e5716000 r-xp 00000000 08:06 663042                     /usr/lib/ladspa/highpass_iir_1890.so
+7ff4e5716000-7ff4e5915000 ---p 00004000 08:06 663042                     /usr/lib/ladspa/highpass_iir_1890.so
+7ff4e5915000-7ff4e5916000 r--p 00003000 08:06 663042                     /usr/lib/ladspa/highpass_iir_1890.so
+7ff4e5916000-7ff4e5917000 rw-p 00004000 08:06 663042                     /usr/lib/ladspa/highpass_iir_1890.so
+7ff4e5917000-7ff4e591a000 r-xp 00000000 08:06 662951                     /usr/lib/ladspa/LEET_chorus.so
+7ff4e591a000-7ff4e5b19000 ---p 00003000 08:06 662951                     /usr/lib/ladspa/LEET_chorus.so
+7ff4e5b19000-7ff4e5b1a000 r--p 00002000 08:06 662951                     /usr/lib/ladspa/LEET_chorus.so
+7ff4e5b1a000-7ff4e5b1b000 rw-p 00003000 08:06 662951                     /usr/lib/ladspa/LEET_chorus.so
+7ff4e5b1b000-7ff4e5b1e000 r-xp 00000000 08:06 663084                     /usr/lib/ladspa/pulse_1645.so
+7ff4e5b1e000-7ff4e5d1d000 ---p 00003000 08:06 663084                     /usr/lib/ladspa/pulse_1645.so
+7ff4e5d1d000-7ff4e5d1e000 r--p 00002000 08:06 663084                     /usr/lib/ladspa/pulse_1645.so
+7ff4e5d1e000-7ff4e5d1f000 rw-p 00003000 08:06 663084                     /usr/lib/ladspa/pulse_1645.so
+7ff4e5d1f000-7ff4e5d21000 r-xp 00000000 08:06 663141                     /usr/lib/ladspa/tap_tremolo.so
+7ff4e5d21000-7ff4e5f20000 ---p 00002000 08:06 663141                     /usr/lib/ladspa/tap_tremolo.so
+7ff4e5f20000-7ff4e5f21000 r--p 00001000 08:06 663141                     /usr/lib/ladspa/tap_tremolo.so
+7ff4e5f21000-7ff4e5f22000 rw-p 00002000 08:06 663141                     /usr/lib/ladspa/tap_tremolo.so
+7ff4e5f22000-7ff4e5f23000 rw-p 00000000 00:00 0 
+7ff4e5f23000-7ff4e5f25000 r-xp 00000000 08:06 663026                     /usr/lib/ladspa/giant_flange_1437.so
+7ff4e5f25000-7ff4e6124000 ---p 00002000 08:06 663026                     /usr/lib/ladspa/giant_flange_1437.so
+7ff4e6124000-7ff4e6125000 r--p 00001000 08:06 663026                     /usr/lib/ladspa/giant_flange_1437.so
+7ff4e6125000-7ff4e6126000 rw-p 00002000 08:06 663026                     /usr/lib/ladspa/giant_flange_1437.so
+7ff4e6126000-7ff4e6129000 r-xp 00000000 08:06 663140                     /usr/lib/ladspa/tap_sigmoid.so
+7ff4e6129000-7ff4e6328000 ---p 00003000 08:06 663140                     /usr/lib/ladspa/tap_sigmoid.so
+7ff4e6328000-7ff4e6329000 r--p 00002000 08:06 663140                     /usr/lib/ladspa/tap_sigmoid.so
+7ff4e6329000-7ff4e632a000 rw-p 00003000 08:06 663140                     /usr/lib/ladspa/tap_sigmoid.so
+7ff4e632a000-7ff4e632c000 r-xp 00000000 08:06 663131                     /usr/lib/ladspa/tap_echo.so
+7ff4e632c000-7ff4e652c000 ---p 00002000 08:06 663131                     /usr/lib/ladspa/tap_echo.so
+7ff4e652c000-7ff4e652d000 r--p 00002000 08:06 663131                     /usr/lib/ladspa/tap_echo.so
+7ff4e652d000-7ff4e652e000 rw-p 00003000 08:06 663131                     /usr/lib/ladspa/tap_echo.so
+7ff4e652e000-7ff4e652f000 r-xp 00000000 08:06 662976                     /usr/lib/ladspa/branch_1673.so
+7ff4e652f000-7ff4e672e000 ---p 00001000 08:06 662976                     /usr/lib/ladspa/branch_1673.so
+7ff4e672e000-7ff4e672f000 r--p 00000000 08:06 662976                     /usr/lib/ladspa/branch_1673.so
+7ff4e672f000-7ff4e6730000 rw-p 00001000 08:06 662976                     /usr/lib/ladspa/branch_1673.so
+7ff4e6730000-7ff4e673d000 r-xp 00000000 08:06 663152                     /usr/lib/ladspa/vcf_cv_in.so
+7ff4e673d000-7ff4e693c000 ---p 0000d000 08:06 663152                     /usr/lib/ladspa/vcf_cv_in.so
+7ff4e693c000-7ff4e693d000 r--p 0000c000 08:06 663152                     /usr/lib/ladspa/vcf_cv_in.so
+7ff4e693d000-7ff4e693e000 rw-p 0000d000 08:06 663152                     /usr/lib/ladspa/vcf_cv_in.so
+7ff4e693e000-7ff4e693f000 r-xp 00000000 08:06 663070                     /usr/lib/ladspa/multiplexer_4420.so
+7ff4e693f000-7ff4e6b3e000 ---p 00001000 08:06 663070                     /usr/lib/ladspa/multiplexer_4420.so
+7ff4e6b3e000-7ff4e6b3f000 r--p 00000000 08:06 663070                     /usr/lib/ladspa/multiplexer_4420.so
+7ff4e6b3f000-7ff4e6b40000 rw-p 00001000 08:06 663070                     /usr/lib/ladspa/multiplexer_4420.so
+7ff4e6b40000-7ff4e6b42000 r-xp 00000000 08:06 663072                     /usr/lib/ladspa/musicaldelay.so
+7ff4e6b42000-7ff4e6d41000 ---p 00002000 08:06 663072                     /usr/lib/ladspa/musicaldelay.so
+7ff4e6d41000-7ff4e6d42000 r--p 00001000 08:06 663072                     /usr/lib/ladspa/musicaldelay.so
+7ff4e6d42000-7ff4e6d43000 rw-p 00002000 08:06 663072                     /usr/lib/ladspa/musicaldelay.so
+7ff4e6d43000-7ff4e6d45000 r-xp 00000000 08:06 663117                     /usr/lib/ladspa/square_1643.so
+7ff4e6d45000-7ff4e6f44000 ---p 00002000 08:06 663117                     /usr/lib/ladspa/square_1643.so
+7ff4e6f44000-7ff4e6f45000 r--p 00001000 08:06 663117                     /usr/lib/ladspa/square_1643.so
+7ff4e6f45000-7ff4e6f46000 rw-p 00002000 08:06 663117                     /usr/lib/ladspa/square_1643.so
+7ff4e6f46000-7ff4e6f48000 r-xp 00000000 08:06 662953                     /usr/lib/ladspa/LEET_eqbw2x2_1.so
+7ff4e6f48000-7ff4e7147000 ---p 00002000 08:06 662953                     /usr/lib/ladspa/LEET_eqbw2x2_1.so
+7ff4e7147000-7ff4e7148000 r--p 00001000 08:06 662953                     /usr/lib/ladspa/LEET_eqbw2x2_1.so
+7ff4e7148000-7ff4e7149000 rw-p 00002000 08:06 662953                     /usr/lib/ladspa/LEET_eqbw2x2_1.so
+7ff4e7149000-7ff4e714b000 r-xp 00000000 08:06 662996                     /usr/lib/ladspa/declip_1195.so
+7ff4e714b000-7ff4e734a000 ---p 00002000 08:06 662996                     /usr/lib/ladspa/declip_1195.so
+7ff4e734a000-7ff4e734b000 r--p 00001000 08:06 662996                     /usr/lib/ladspa/declip_1195.so
+7ff4e734b000-7ff4e734c000 rw-p 00002000 08:06 662996                     /usr/lib/ladspa/declip_1195.so
+7ff4e734c000-7ff4e7350000 r-xp 00000000 08:06 663128                     /usr/lib/ladspa/tap_doubler.so
+7ff4e7350000-7ff4e754f000 ---p 00004000 08:06 663128                     /usr/lib/ladspa/tap_doubler.so
+7ff4e754f000-7ff4e7550000 r--p 00003000 08:06 663128                     /usr/lib/ladspa/tap_doubler.so
+7ff4e7550000-7ff4e7551000 rw-p 00004000 08:06 663128                     /usr/lib/ladspa/tap_doubler.so
+7ff4e7551000-7ff4e7556000 r-xp 00000000 08:06 663027                     /usr/lib/ladspa/gong_1424.so
+7ff4e7556000-7ff4e7755000 ---p 00005000 08:06 663027                     /usr/lib/ladspa/gong_1424.so
+7ff4e7755000-7ff4e7756000 r--p 00004000 08:06 663027                     /usr/lib/ladspa/gong_1424.so
+7ff4e7756000-7ff4e7757000 rw-p 00005000 08:06 663027                     /usr/lib/ladspa/gong_1424.so
+7ff4e7757000-7ff4e775b000 r-xp 00000000 08:06 662973                     /usr/lib/ladspa/blvco.so
+7ff4e775b000-7ff4e795a000 ---p 00004000 08:06 662973                     /usr/lib/ladspa/blvco.so
+7ff4e795a000-7ff4e795c000 rw-p 00003000 08:06 662973                     /usr/lib/ladspa/blvco.so
+7ff4e795c000-7ff4e795e000 r-xp 00000000 08:06 663028                     /usr/lib/ladspa/gong_beater_1439.so
+7ff4e795e000-7ff4e7b5d000 ---p 00002000 08:06 663028                     /usr/lib/ladspa/gong_beater_1439.so
+7ff4e7b5d000-7ff4e7b5e000 r--p 00001000 08:06 663028                     /usr/lib/ladspa/gong_beater_1439.so
+7ff4e7b5e000-7ff4e7b5f000 rw-p 00002000 08:06 663028                     /usr/lib/ladspa/gong_beater_1439.so
+7ff4e7b5f000-7ff4e7b61000 r-xp 00000000 08:06 663134                     /usr/lib/ladspa/tap_limiter.so
+7ff4e7b61000-7ff4e7d60000 ---p 00002000 08:06 663134                     /usr/lib/ladspa/tap_limiter.so
+7ff4e7d60000-7ff4e7d61000 r--p 00001000 08:06 663134                     /usr/lib/ladspa/tap_limiter.so
+7ff4e7d61000-7ff4e7d62000 rw-p 00002000 08:06 663134                     /usr/lib/ladspa/tap_limiter.so
+7ff4e7d62000-7ff4e7d63000 r-xp 00000000 08:06 663046                     /usr/lib/ladspa/impulse_1885.so
+7ff4e7d63000-7ff4e7f63000 ---p 00001000 08:06 663046                     /usr/lib/ladspa/impulse_1885.so
+7ff4e7f63000-7ff4e7f64000 r--p 00001000 08:06 663046                     /usr/lib/ladspa/impulse_1885.so
+7ff4e7f64000-7ff4e7f65000 rw-p 00002000 08:06 663046                     /usr/lib/ladspa/impulse_1885.so
+7ff4e7f65000-7ff4e7f66000 r-xp 00000000 08:06 663044                     /usr/lib/ladspa/hz_voct_4200.so
+7ff4e7f66000-7ff4e8165000 ---p 00001000 08:06 663044                     /usr/lib/ladspa/hz_voct_4200.so
+7ff4e8165000-7ff4e8166000 r--p 00000000 08:06 663044                     /usr/lib/ladspa/hz_voct_4200.so
+7ff4e8166000-7ff4e8167000 rw-p 00001000 08:06 663044                     /usr/lib/ladspa/hz_voct_4200.so
+7ff4e8167000-7ff4e816a000 r-xp 00000000 08:06 663063                     /usr/lib/ladspa/ls_filter_1908.so
+7ff4e816a000-7ff4e8369000 ---p 00003000 08:06 663063                     /usr/lib/ladspa/ls_filter_1908.so
+7ff4e8369000-7ff4e836a000 r--p 00002000 08:06 663063                     /usr/lib/ladspa/ls_filter_1908.so
+7ff4e836a000-7ff4e836b000 rw-p 00003000 08:06 663063                     /usr/lib/ladspa/ls_filter_1908.so
+7ff4e836b000-7ff4e836c000 r-xp 00000000 08:06 663007                     /usr/lib/ladspa/fast_crossfade_4410.so
+7ff4e836c000-7ff4e856b000 ---p 00001000 08:06 663007                     /usr/lib/ladspa/fast_crossfade_4410.so
+7ff4e856b000-7ff4e856c000 r--p 00000000 08:06 663007                     /usr/lib/ladspa/fast_crossfade_4410.so
+7ff4e856c000-7ff4e856d000 rw-p 00001000 08:06 663007                     /usr/lib/ladspa/fast_crossfade_4410.so
+7ff4e856d000-7ff4e856f000 r-xp 00000000 08:06 663006                     /usr/lib/ladspa/fad_delay_1192.so
+7ff4e856f000-7ff4e876e000 ---p 00002000 08:06 663006                     /usr/lib/ladspa/fad_delay_1192.so
+7ff4e876e000-7ff4e876f000 r--p 00001000 08:06 663006                     /usr/lib/ladspa/fad_delay_1192.so
+7ff4e876f000-7ff4e8770000 rw-p 00002000 08:06 663006                     /usr/lib/ladspa/fad_delay_1192.so
+7ff4e8770000-7ff4e8776000 r-xp 00000000 08:06 663133                     /usr/lib/ladspa/tap_eqbw.so
+7ff4e8776000-7ff4e8975000 ---p 00006000 08:06 663133                     /usr/lib/ladspa/tap_eqbw.so
+7ff4e8975000-7ff4e8976000 r--p 00005000 08:06 663133                     /usr/lib/ladspa/tap_eqbw.so
+7ff4e8976000-7ff4e8977000 rw-p 00006000 08:06 663133                     /usr/lib/ladspa/tap_eqbw.so
+7ff4e8977000-7ff4e897a000 r-xp 00000000 08:06 663016                     /usr/lib/ladspa/foo_limiter.so
+7ff4e897a000-7ff4e8b79000 ---p 00003000 08:06 663016                     /usr/lib/ladspa/foo_limiter.so
+7ff4e8b79000-7ff4e8b7a000 r--p 00002000 08:06 663016                     /usr/lib/ladspa/foo_limiter.so
+7ff4e8b7a000-7ff4e8b7b000 rw-p 00003000 08:06 663016                     /usr/lib/ladspa/foo_limiter.so
+7ff4e8b7b000-7ff4e8b86000 r-xp 00000000 08:06 663034                     /usr/lib/ladspa/guitarix_crybaby.so
+7ff4e8b86000-7ff4e8d86000 ---p 0000b000 08:06 663034                     /usr/lib/ladspa/guitarix_crybaby.so
+7ff4e8d86000-7ff4e8d87000 r--p 0000b000 08:06 663034                     /usr/lib/ladspa/guitarix_crybaby.so
+7ff4e8d87000-7ff4e8d88000 rw-p 0000c000 08:06 663034                     /usr/lib/ladspa/guitarix_crybaby.so
+7ff4e8d88000-7ff4e8d8c000 r-xp 00000000 08:06 663094                     /usr/lib/ladspa/ringmod_1188.so
+7ff4e8d8c000-7ff4e8f8b000 ---p 00004000 08:06 663094                     /usr/lib/ladspa/ringmod_1188.so
+7ff4e8f8b000-7ff4e8f8c000 r--p 00003000 08:06 663094                     /usr/lib/ladspa/ringmod_1188.so
+7ff4e8f8c000-7ff4e8f8d000 rw-p 00004000 08:06 663094                     /usr/lib/ladspa/ringmod_1188.so
+7ff4e8f8d000-7ff4e8f90000 r-xp 00000000 08:06 663167                     /usr/lib/ladspa/zyneq3par.so
+7ff4e8f90000-7ff4e9190000 ---p 00003000 08:06 663167                     /usr/lib/ladspa/zyneq3par.so
+7ff4e9190000-7ff4e9191000 r--p 00003000 08:06 663167                     /usr/lib/ladspa/zyneq3par.so
+7ff4e9191000-7ff4e9192000 rw-p 00004000 08:06 663167                     /usr/lib/ladspa/zyneq3par.so
+7ff4e9192000-7ff4e91dc000 r-xp 00000000 08:06 662979                     /usr/lib/ladspa/caps.so
+7ff4e91dc000-7ff4e93db000 ---p 0004a000 08:06 662979                     /usr/lib/ladspa/caps.so
+7ff4e93db000-7ff4e947c000 rw-p 00049000 08:06 662979                     /usr/lib/ladspa/caps.so
+7ff4e947c000-7ff4e9480000 r-xp 00000000 08:06 663130                     /usr/lib/ladspa/tap_dynamics_st.so
+7ff4e9480000-7ff4e967f000 ---p 00004000 08:06 663130                     /usr/lib/ladspa/tap_dynamics_st.so
+7ff4e967f000-7ff4e9680000 r--p 00003000 08:06 663130                     /usr/lib/ladspa/tap_dynamics_st.so
+7ff4e9680000-7ff4e9681000 rw-p 00004000 08:06 663130                     /usr/lib/ladspa/tap_dynamics_st.so
+7ff4e9681000-7ff4e9687000 r-xp 00000000 08:06 662952                     /usr/lib/ladspa/LEET_eqbw2x2.so
+7ff4e9687000-7ff4e9886000 ---p 00006000 08:06 662952                     /usr/lib/ladspa/LEET_eqbw2x2.so
+7ff4e9886000-7ff4e9887000 r--p 00005000 08:06 662952                     /usr/lib/ladspa/LEET_eqbw2x2.so
+7ff4e9887000-7ff4e9888000 rw-p 00006000 08:06 662952                     /usr/lib/ladspa/LEET_eqbw2x2.so
+7ff4e9888000-7ff4e9889000 r-xp 00000000 08:06 663043                     /usr/lib/ladspa/hilbert_1440.so
+7ff4e9889000-7ff4e9a89000 ---p 00001000 08:06 663043                     /usr/lib/ladspa/hilbert_1440.so
+7ff4e9a89000-7ff4e9a8a000 r--p 00001000 08:06 663043                     /usr/lib/ladspa/hilbert_1440.so
+7ff4e9a8a000-7ff4e9a8b000 rw-p 00002000 08:06 663043                     /usr/lib/ladspa/hilbert_1440.so
+7ff4e9a8b000-7ff4e9a90000 r-xp 00000000 08:06 663002                     /usr/lib/ladspa/dj_eq_1901.so
+7ff4e9a90000-7ff4e9c8f000 ---p 00005000 08:06 663002                     /usr/lib/ladspa/dj_eq_1901.so
+7ff4e9c8f000-7ff4e9c90000 r--p 00004000 08:06 663002                     /usr/lib/ladspa/dj_eq_1901.so
+7ff4e9c90000-7ff4e9c91000 rw-p 00005000 08:06 663002                     /usr/lib/ladspa/dj_eq_1901.so
+7ff4e9c91000-7ff4e9c93000 r-xp 00000000 08:06 663067                     /usr/lib/ladspa/matrix_st_ms_1420.so
+7ff4e9c93000-7ff4e9e92000 ---p 00002000 08:06 663067                     /usr/lib/ladspa/matrix_st_ms_1420.so
+7ff4e9e92000-7ff4e9e93000 r--p 00001000 08:06 663067                     /usr/lib/ladspa/matrix_st_ms_1420.so
+7ff4e9e93000-7ff4e9e94000 rw-p 00002000 08:06 663067                     /usr/lib/ladspa/matrix_st_ms_1420.so
+7ff4e9e94000-7ff4e9e96000 r-xp 00000000 08:06 663150                     /usr/lib/ladspa/valve_rect_1405.so
+7ff4e9e96000-7ff4ea095000 ---p 00002000 08:06 663150                     /usr/lib/ladspa/valve_rect_1405.so
+7ff4ea095000-7ff4ea096000 r--p 00001000 08:06 663150                     /usr/lib/ladspa/valve_rect_1405.so
+7ff4ea096000-7ff4ea097000 rw-p 00002000 08:06 663150                     /usr/lib/ladspa/valve_rect_1405.so
+7ff4ea097000-7ff4ea098000 r-xp 00000000 08:06 658690                     /usr/lib/ladspa/noise.so
+7ff4ea098000-7ff4ea297000 ---p 00001000 08:06 658690                     /usr/lib/ladspa/noise.so
+7ff4ea297000-7ff4ea298000 rw-p 00000000 08:06 658690                     /usr/lib/ladspa/noise.so
+7ff4ea298000-7ff4ea29d000 r-xp 00000000 08:06 663011                     /usr/lib/ladspa/fm_osc_1415.so
+7ff4ea29d000-7ff4ea49c000 ---p 00005000 08:06 663011                     /usr/lib/ladspa/fm_osc_1415.so
+7ff4ea49c000-7ff4ea49d000 r--p 00004000 08:06 663011                     /usr/lib/ladspa/fm_osc_1415.so
+7ff4ea49d000-7ff4ea49e000 rw-p 00005000 08:06 663011                     /usr/lib/ladspa/fm_osc_1415.so
+7ff4ea49e000-7ff4ea4a3000 r-xp 00000000 08:06 663075                     /usr/lib/ladspa/notch_iir_1894.so
+7ff4ea4a3000-7ff4ea6a2000 ---p 00005000 08:06 663075                     /usr/lib/ladspa/notch_iir_1894.so
+7ff4ea6a2000-7ff4ea6a3000 r--p 00004000 08:06 663075                     /usr/lib/ladspa/notch_iir_1894.so
+7ff4ea6a3000-7ff4ea6a4000 rw-p 00005000 08:06 663075                     /usr/lib/ladspa/notch_iir_1894.so
+7ff4ea6a4000-7ff4ea6a6000 r-xp 00000000 08:06 663059                     /usr/lib/ladspa/latency_1914.so
+7ff4ea6a6000-7ff4ea8a5000 ---p 00002000 08:06 663059                     /usr/lib/ladspa/latency_1914.so
+7ff4ea8a5000-7ff4ea8a6000 r--p 00001000 08:06 663059                     /usr/lib/ladspa/latency_1914.so
+7ff4ea8a6000-7ff4ea8a7000 rw-p 00002000 08:06 663059                     /usr/lib/ladspa/latency_1914.so
+7ff4ea8a7000-7ff4ea8ac000 r-xp 00000000 08:06 662964                     /usr/lib/ladspa/ambisonic3.so
+7ff4ea8ac000-7ff4eaaab000 ---p 00005000 08:06 662964                     /usr/lib/ladspa/ambisonic3.so
+7ff4eaaab000-7ff4eaaac000 r--p 00004000 08:06 662964                     /usr/lib/ladspa/ambisonic3.so
+7ff4eaaac000-7ff4eaaad000 rw-p 00005000 08:06 662964                     /usr/lib/ladspa/ambisonic3.so
+7ff4eaaad000-7ff4eaaae000 r-xp 00000000 08:06 662954                     /usr/lib/ladspa/adenv.so
+7ff4eaaae000-7ff4eacae000 ---p 00001000 08:06 662954                     /usr/lib/ladspa/adenv.so
+7ff4eacae000-7ff4eacaf000 r--p 00001000 08:06 662954                     /usr/lib/ladspa/adenv.so
+7ff4eacaf000-7ff4eacb0000 rw-p 00002000 08:06 662954                     /usr/lib/ladspa/adenv.so
+7ff4eacb0000-7ff4eacb3000 r-xp 00000000 08:06 663127                     /usr/lib/ladspa/tap_deesser.so
+7ff4eacb3000-7ff4eaeb2000 ---p 00003000 08:06 663127                     /usr/lib/ladspa/tap_deesser.so
+7ff4eaeb2000-7ff4eaeb3000 r--p 00002000 08:06 663127                     /usr/lib/ladspa/tap_deesser.so
+7ff4eaeb3000-7ff4eaeb4000 rw-p 00003000 08:06 663127                     /usr/lib/ladspa/tap_deesser.so
+7ff4eaeb4000-7ff4eaebc000 rw-p 00000000 00:00 0 
+7ff4eaebc000-7ff4eaebe000 r-xp 00000000 08:06 663112                     /usr/lib/ladspa/sinus_wavewrapper_1198.so
+7ff4eaebe000-7ff4eb0bd000 ---p 00002000 08:06 663112                     /usr/lib/ladspa/sinus_wavewrapper_1198.so
+7ff4eb0bd000-7ff4eb0be000 r--p 00001000 08:06 663112                     /usr/lib/ladspa/sinus_wavewrapper_1198.so
+7ff4eb0be000-7ff4eb0bf000 rw-p 00002000 08:06 663112                     /usr/lib/ladspa/sinus_wavewrapper_1198.so
+7ff4eb0bf000-7ff4eb0c0000 r-xp 00000000 08:06 662986                     /usr/lib/ladspa/const_1909.so
+7ff4eb0c0000-7ff4eb2c0000 ---p 00001000 08:06 662986                     /usr/lib/ladspa/const_1909.so
+7ff4eb2c0000-7ff4eb2c1000 r--p 00001000 08:06 662986                     /usr/lib/ladspa/const_1909.so
+7ff4eb2c1000-7ff4eb2c2000 rw-p 00002000 08:06 662986                     /usr/lib/ladspa/const_1909.so
+7ff4eb2c2000-7ff4eb2c6000 r-xp 00000000 08:06 663079                     /usr/lib/ladspa/plate_1423.so
+7ff4eb2c6000-7ff4eb4c5000 ---p 00004000 08:06 663079                     /usr/lib/ladspa/plate_1423.so
+7ff4eb4c5000-7ff4eb4c6000 r--p 00003000 08:06 663079                     /usr/lib/ladspa/plate_1423.so
+7ff4eb4c6000-7ff4eb4c7000 rw-p 00004000 08:06 663079                     /usr/lib/ladspa/plate_1423.so
+7ff4eb4c7000-7ff4eb4ca000 r-xp 00000000 08:06 663137                     /usr/lib/ladspa/tap_reflector.so
+7ff4eb4ca000-7ff4eb6c9000 ---p 00003000 08:06 663137                     /usr/lib/ladspa/tap_reflector.so
+7ff4eb6c9000-7ff4eb6ca000 r--p 00002000 08:06 663137                     /usr/lib/ladspa/tap_reflector.so
+7ff4eb6ca000-7ff4eb6cb000 rw-p 00003000 08:06 663137                     /usr/lib/ladspa/tap_reflector.so
+7ff4eb6cb000-7ff4eb6cc000 rw-p 00000000 00:00 0 
+7ff4eb6cc000-7ff4eb6d0000 r-xp 00000000 08:06 663078                     /usr/lib/ladspa/pitch_scale_1194.so
+7ff4eb6d0000-7ff4eb8cf000 ---p 00004000 08:06 663078                     /usr/lib/ladspa/pitch_scale_1194.so
+7ff4eb8cf000-7ff4eb8d0000 r--p 00003000 08:06 663078                     /usr/lib/ladspa/pitch_scale_1194.so
+7ff4eb8d0000-7ff4eb8d1000 rw-p 00004000 08:06 663078                     /usr/lib/ladspa/pitch_scale_1194.so
+7ff4eb8d1000-7ff4eb8e1000 rw-p 00000000 00:00 0 
+7ff4eb8e1000-7ff4eb8e4000 r-xp 00000000 08:06 663142                     /usr/lib/ladspa/tap_tubewarmth.so
+7ff4eb8e4000-7ff4ebae3000 ---p 00003000 08:06 663142                     /usr/lib/ladspa/tap_tubewarmth.so
+7ff4ebae3000-7ff4ebae4000 r--p 00002000 08:06 663142                     /usr/lib/ladspa/tap_tubewarmth.so
+7ff4ebae4000-7ff4ebae5000 rw-p 00003000 08:06 663142                     /usr/lib/ladspa/tap_tubewarmth.so
+7ff4ebae5000-7ff4ebae7000 r-xp 00000000 08:06 663164                     /usr/lib/ladspa/zynalienwah.so
+7ff4ebae7000-7ff4ebce6000 ---p 00002000 08:06 663164                     /usr/lib/ladspa/zynalienwah.so
+7ff4ebce6000-7ff4ebce7000 r--p 00001000 08:06 663164                     /usr/lib/ladspa/zynalienwah.so
+7ff4ebce7000-7ff4ebce8000 rw-p 00002000 08:06 663164                     /usr/lib/ladspa/zynalienwah.so
+7ff4ebce8000-7ff4ebd0f000 r-xp 00000000 08:06 662981                     /usr/lib/ladspa/cmt.so
+7ff4ebd0f000-7ff4ebf0f000 ---p 00027000 08:06 662981                     /usr/lib/ladspa/cmt.so
+7ff4ebf0f000-7ff4ebf11000 r--p 00027000 08:06 662981                     /usr/lib/ladspa/cmt.so
+7ff4ebf11000-7ff4ebf12000 rw-p 00029000 08:06 662981                     /usr/lib/ladspa/cmt.so
+7ff4ebf12000-7ff4ebf17000 r-xp 00000000 08:06 662988                     /usr/lib/ladspa/cs_chorus.so
+7ff4ebf17000-7ff4ec116000 ---p 00005000 08:06 662988                     /usr/lib/ladspa/cs_chorus.so
+7ff4ec116000-7ff4ec117000 r--p 00004000 08:06 662988                     /usr/lib/ladspa/cs_chorus.so
+7ff4ec117000-7ff4ec118000 rw-p 00005000 08:06 662988                     /usr/lib/ladspa/cs_chorus.so
+7ff4ec118000-7ff4ec11a000 r-xp 00000000 08:06 662992                     /usr/lib/ladspa/dahdsr_hexp.so
+7ff4ec11a000-7ff4ec319000 ---p 00002000 08:06 662992                     /usr/lib/ladspa/dahdsr_hexp.so
+7ff4ec319000-7ff4ec31a000 r--p 00001000 08:06 662992                     /usr/lib/ladspa/dahdsr_hexp.so
+7ff4ec31a000-7ff4ec31b000 rw-p 00002000 08:06 662992                     /usr/lib/ladspa/dahdsr_hexp.so
+7ff4ec31b000-7ff4ec31d000 r-xp 00000000 08:06 662987                     /usr/lib/ladspa/crossover_dist_1404.so
+7ff4ec31d000-7ff4ec51c000 ---p 00002000 08:06 662987                     /usr/lib/ladspa/crossover_dist_1404.so
+7ff4ec51c000-7ff4ec51d000 r--p 00001000 08:06 662987                     /usr/lib/ladspa/crossover_dist_1404.so
+7ff4ec51d000-7ff4ec51e000 rw-p 00002000 08:06 662987                     /usr/lib/ladspa/crossover_dist_1404.so
+7ff4ec51e000-7ff4ec520000 r-xp 00000000 08:06 663161                     /usr/lib/ladspa/waveguide_mesh_2670.so
+7ff4ec520000-7ff4ec71f000 ---p 00002000 08:06 663161                     /usr/lib/ladspa/waveguide_mesh_2670.so
+7ff4ec71f000-7ff4ec720000 r--p 00001000 08:06 663161                     /usr/lib/ladspa/waveguide_mesh_2670.so
+7ff4ec720000-7ff4ec721000 rw-p 00002000 08:06 663161                     /usr/lib/ladspa/waveguide_mesh_2670.so
+7ff4ec721000-7ff4ec723000 r-xp 00000000 08:06 662975                     /usr/lib/ladspa/bode_shifter_cv_1432.so
+7ff4ec723000-7ff4ec922000 ---p 00002000 08:06 662975                     /usr/lib/ladspa/bode_shifter_cv_1432.so
+7ff4ec922000-7ff4ec923000 r--p 00001000 08:06 662975                     /usr/lib/ladspa/bode_shifter_cv_1432.so
+7ff4ec923000-7ff4ec924000 rw-p 00002000 08:06 662975                     /usr/lib/ladspa/bode_shifter_cv_1432.so
+7ff4ec924000-7ff4ec926000 r-xp 00000000 08:06 663123                     /usr/lib/ladspa/sync_square_1678.so
+7ff4ec926000-7ff4ecb25000 ---p 00002000 08:06 663123                     /usr/lib/ladspa/sync_square_1678.so
+7ff4ecb25000-7ff4ecb26000 r--p 00001000 08:06 663123                     /usr/lib/ladspa/sync_square_1678.so
+7ff4ecb26000-7ff4ecb27000 rw-p 00002000 08:06 663123                     /usr/lib/ladspa/sync_square_1678.so
+7ff4ecb27000-7ff4ecb2a000 r-xp 00000000 08:06 663025                     /usr/lib/ladspa/gate_1410.so
+7ff4ecb2a000-7ff4ecd29000 ---p 00003000 08:06 663025                     /usr/lib/ladspa/gate_1410.so
+7ff4ecd29000-7ff4ecd2a000 r--p 00002000 08:06 663025                     /usr/lib/ladspa/gate_1410.so
+7ff4ecd2a000-7ff4ecd2b000 rw-p 00003000 08:06 663025                     /usr/lib/ladspa/gate
