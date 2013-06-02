@@ -79,7 +79,7 @@
 ;
 
 (def LAUNCHPAD_LENGTH 8)
-(def LAUNCHPAD_SIZE (* LAUNCHPAD_LENGTH LAUNCHPAD_LENGTH))
+(def LAUNCHPAD_AREA (* LAUNCHPAD_LENGTH LAUNCHPAD_LENGTH))
 (def BPM 128)
 (def lpad (open))
 (def m (metronome BPM))
@@ -88,14 +88,13 @@
                              ; 1: ready with LED orange
                              ; 2: playing with LED green
 (def active-action (atom 0)) ; number which designates the currently active action.
-(def )
-
-(def )
 
 
 ;
 ; utilities
 ;
+
+(defn get-event-name [x y] (str x y "action"))
 
 (defn null-callback [x y pressed?] nil)
 
@@ -114,7 +113,7 @@
   (swap! atom (fn [x] val)))
 
 (defn get-tracker-pos [beat]
-  (beat->xy (mod beat LAUNCHPAD_SIZE)))
+  (beat->xy (mod beat LAUNCHPAD_AREA)))
 
 ; TODO: make the following fucntions able to specify a range, ie part of a line
 
@@ -139,55 +138,28 @@
 
 
 ;
-; core functionality
+; non-grid buttons
 ;
 
-(defn run-leds
-  [lpad beat]
-  (let [next-beat (inc beat)
-       [x y] (get-tracker-pos beat)
-       [prevx prevy] (get-tracker-pos (- beat 1))]
-    (at (m beat)
-        (draw-grid lpad prevx prevy :off)
-        (draw-grid lpad x y :orange :high)
-        (quick-kick :amp 0.5))
-    (if @storyboard-on?
-      (apply-at (m next-beat) #'run-leds [lpad next-beat]))))
-
-(defn start-storyboard
-  [x y]
-  (let [beat (- (xy->beat x y) 1)]
-    (do (metro-start m beat)
-        (set-atom! tracker-state 2)
-        (set-atom! storyboard-on? true)
-        (reset lpad)
-        (assert-leds)
-        (draw-grid lpad 4 8 :green :low)
-        (run-leds lpad (m)))))
-
-
-;
-; non-grid button locations
-;
-
-; special buttons
+; TODO: turn special buttons into maps of location and callback
 (def tracker-state-loc {:x 4 :y 8})
-
-; actions
-(def stop-track-loc 8)
 
 
 ;
 ; led assertions
 ;
 
-(defn assert-tracker-state []
+(defn assert-tracker-state-leds []
   (let [x (:x tracker-state-loc)
         y (:y tracker-state-loc)]
     (cond 
       (= 0 @tracker-state) (draw-grid lpad x y :off)
       (= 1 @tracker-state) (draw-grid lpad x y :orange :low)
       (= 2 @tracker-state) (draw-grid lpad x y :green :low))))
+
+ ; TODO: make this do something
+(defn assert-grid-leds []
+  1)
 
 (defn assert-action-leds []
   (let [x LAUNCHPAD_LENGTH
@@ -198,26 +170,22 @@
 
 (defn assert-leds []
   (do 
-    (assert-tracker-state)
+    (assert-grid-leds)
+    (assert-tracker-state-leds)
     (assert-action-leds)))
 
 
 ;
-; action button methods
+; actions
 ;
 
-; TODO: write stuff such that a grid press will set its state variable, and
-;       will call from an array the appropriate function.
-;       example array: [ stop-action lpf-action ... ].
-;       This also makes for easy swapping / paging, sweet.
-(def)
-
-(defn stop-action
-  [beat]
-  (if pressed?
-    (do
-      (set-atom! active-action y)
-      (assert-action-leds))))
+; TODO: make it so actions can be scheduled in more than 1 place. the problem
+;       currently is that I have overlapping event-id's. another problem is how do
+;       i maintain state as to which actions are scheduled on which beats? that seems
+;       to be internal to metronome, so i don't want to double-up on work/memory...
+(def stop-action
+  {:id "stop"
+   :callback (fn [event] (println "stop-action called!"))})
 
 (defn action-button
   [x y pressed?]
@@ -226,23 +194,21 @@
       (set-atom! active-action y)
       (assert-action-leds))))
 
+(def null-action
+  {:id "null"
+   :callback (fn [event] (println "null-action called!"))})
 
+(def actions
+  (atom (vec (repeat LAUNCHPAD_LENGTH null-action))))
 
-((get-callback @callbacks x y) x y pressed?)))
+(defn insert-action
+  [action i]
+  (swap! actions (fn [prev] (assoc prev i action))))
 
-  (atom (vec (replicate area null-callback)))))
+(insert-action stop-action 0)
 
-(defn grid-press
-  [x y pressed?]
-  (let [beat (xy->beat x y)]
-    (if pressed?
-      (cond
-        ((at (m beat) 
-          (println "hi, beat: " beat))
-        :else (draw-grid lpad x y :green :high))
-      (cond
-        (= 1 @tracker-state) (start-storyboard x y)
-        :else (draw-grid lpad x y :off)))))
+(defn get-action [i]
+  (nth @actions i))
 
 ;
 ; special button methods
@@ -260,17 +226,72 @@
         (do
           (set-atom! tracker-state 1)
           (set-atom! storyboard-on? false))))
-  (assert-tracker-state))
+  (assert-tracker-state-leds))
+
+
+;
+; core functionality
+;
+
+(defn run-tracker
+  [lpad beat]
+  (let [next-beat (inc beat)
+       [x y] (get-tracker-pos beat)
+       [prevx prevy] (get-tracker-pos (- beat 1))]
+    (if @storyboard-on?   
+
+      (do ; storyboard on stuff
+        (at (m beat)
+          (event (get-event-name x y)) ; trigger any scheduled actions
+          (draw-grid lpad prevx prevy :off) ; turn off previous pos LED
+          (draw-grid lpad x y :orange :high)) ; turn on current pos LED
+          ;(quick-kick :amp 0.5))
+        (apply-at (m next-beat) #'run-tracker [lpad next-beat]))
+
+      ; if storyboard is off, just turn off the previous LED
+      (draw-grid lpad prevx prevy :off))))
+
+(defn start-storyboard
+  ([] (start-storyboard 0 0))
+  ([x y]
+    (let [beat (xy->beat x y)]
+      (do (metro-start m beat)
+          (set-atom! tracker-state 2)
+          (set-atom! storyboard-on? true)
+          ;(reset lpad)
+          (assert-leds)
+          (run-tracker lpad beat)))))
 
 
 ;
 ; grid callback stuff
 ;
 
+(defn grid-press
+  [x y pressed?]
+  (let [beat (xy->beat x y)
+        tracker-ready? (= 1 @tracker-state)]
+    (if pressed?
+
+      (cond ; when button is pressed
+        tracker-ready? (draw-grid lpad x y :green :high)
+        (not tracker-ready?)
+        (let [event-name (get-event-name x y)
+              action (get-action @active-action)
+              action-callback (:callback action)
+              action-id (:id action)]
+          (oneshot-event event-name action-callback action-id)
+          (assert-grid-leds)
+          (draw-grid lpad x y :green :low)))
+
+      (cond ; when button is released
+        tracker-ready? (start-storyboard x y)))))
+        ;:else (draw-grid lpad x y :off)))))
+
 (def callbacks
-  (let [length (+ LAUNCHPAD_SIZE 1)
+  (let [length (+ LAUNCHPAD_AREA 1)
         area (* length length)]
-  (atom (vec (replicate area null-callback)))))
+  (atom (vec (repeat area null-callback)))))
 
 ; quick indexing hack to account for the launchpad's function buttons
 (defn i->xy [i]
@@ -283,18 +304,17 @@
   (+ (* y (+ LAUNCHPAD_LENGTH 1)) x))
 
 (defn insert-callback [callback x y]
-  (swap!
-    callbacks
+  (swap! callbacks
     (fn [prev] (assoc prev (xy->i x y) callback))))
 
-(defn get-callback [callbacks x y]
-  (nth callbacks (xy->i x y)))
+(defn get-callback [x y]
+  (nth @callbacks (xy->i x y)))
 
 (defn button-press
   [x y pressed?]
   (do
     (println "x: " x " y: " y " pressed: " pressed?)
-    ((get-callback @callbacks x y) x y pressed?)))
+    ((get-callback x y) x y pressed?)))
     ;(if-let [grid-fn (get-grid-fn x y)]
     ;  (grid-fn x y pressed?))))
 
@@ -313,10 +333,7 @@
   (:x tracker-state-loc) (:y tracker-state-loc))
 
 ; set action buttons
-(insert-callback stop-button
-  (:x stop-button-loc) (:y stop-button-loc))
-
-(domap #(insert-callback null-action 8 %) (range 8))
+(domap #(insert-callback action-button LAUNCHPAD_LENGTH %) (range LAUNCHPAD_LENGTH))
 
 (assert-leds)
 (on-grid-pressed lpad button-press)
