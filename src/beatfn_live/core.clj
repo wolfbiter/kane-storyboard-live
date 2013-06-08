@@ -87,16 +87,44 @@
 (def tracker-state (atom 1)) ; 0: paused with LED off
                              ; 1: ready with LED orange
                              ; 2: playing with LED green
-(def active-action (atom 0)) ; number which designates the currently active action.
+
+(def null-action
+  {:name "null"
+   :callback (fn [event] (println "null-action called!"))})
+
+; vector of actions which are currently loaded
+(def action-bank (atom (vec (repeat LAUNCHPAD_LENGTH null-action))))
+
+; number which designates the currently active action.
+(def active-action-number (atom 0))
+
+; a map k/v'd with:
+; {beat-event {action-handle1 scheduled-action1
+;              action-handle2 scheduled-action2} }
+(def scheduled-actions (atom {}))
+
 
 
 ;
 ; utilities
 ;
 
-(defn get-event-name [x y] (str x y "action"))
+(defn set-action
+  [action i]
+  (swap! action-bank (fn [prev] (assoc prev i action))))
+
+(defn get-action
+  ([] (get-action @active-action-number)) ; if no args, return active action
+  ([i] (nth @action-bank i)))
+
+(defn get-beat-event-kw [beat] (keyword (str "action" beat)))
+
+(defn make-handle [action beat]
+  (keyword (str (:name action) beat)))
 
 (defn null-callback [x y pressed?] nil)
+
+
 
 (defn domap [& args]
   (doall (apply map args)))
@@ -115,26 +143,38 @@
 (defn get-tracker-pos [beat]
   (beat->xy (mod beat LAUNCHPAD_AREA)))
 
-; TODO: make the following fucntions able to specify a range, ie part of a line
+; TODO: make the following functions able to specify a range, ie part of a line
 
 (defn set-line
-  [lpad orientation line color intensity]
+  [lpad orientation line color intensity start end]
   (cond 
     (= orientation "row")
-    (domap #(draw-grid lpad % line color intensity) (range LAUNCHPAD_LENGTH))
+    (domap #(draw-grid lpad % line color intensity) (range start end))
     (= orientation "column")
-    (domap #(draw-grid lpad line % color intensity) (range LAUNCHPAD_LENGTH))
+    (domap #(draw-grid lpad line % color intensity) (range start end))
     :else (println "ERROR: Unknown set-line orientation " orientation)))
 
 (defn set-row
   "Sets the row of given lpad to given color, intensity defaults to :low."
-  ([lpad row color] (set-row lpad row color :low))
-  ([lpad row color intensity] (set-line lpad "row" row color intensity)))
+  ([lpad row color]
+    (set-row lpad row color :low))
+  ([lpad row color intensity]
+    (set-row lpad row color intensity 0 LAUNCHPAD_LENGTH))
+  ([lpad row color start end]
+    (set-row lpad row color :low start end))
+  ([lpad row color intensity start end]
+    (set-line lpad "row" row color intensity start end)))
 
 (defn set-column
   "Sets the column of given lpad to given color, intensity defaults to :low."
-  ([lpad column color] (set-column lpad column color :low))
-  ([lpad column color intensity] (set-line lpad "column" column color intensity)))
+  ([lpad column color]
+    (set-column lpad column color :low))
+  ([lpad column color intensity]
+    (set-column lpad column color intensity 0 LAUNCHPAD_LENGTH))
+  ([lpad column color start end]
+    (set-column lpad column color :low start end))
+  ([lpad column color intensity start end]
+    (set-line lpad "column" column color intensity start end)))
 
 
 ;
@@ -157,13 +197,28 @@
       (= 1 @tracker-state) (draw-grid lpad x y :orange :low)
       (= 2 @tracker-state) (draw-grid lpad x y :green :low))))
 
- ; TODO: make this do something
+ ; TODO: make this do something with scheduled-actions
 (defn assert-grid-leds []
-  1)
+  (let [active-action (get-action)
+        scheduled-actions @scheduled-actions]
+    (for [y (range LAUNCHPAD_LENGTH)
+          x (range LAUNCHPAD_LENGTH)]
+      (let [beat (xy->beat x y)
+            beat-event-kw (get-beat-event-kw beat)]
+            (println "assert-grid-leds called!")))))
+
+    
+
+    ;(for [x (range LAUNCHPAD_LENGTH)
+    ;      y (range LAUNCHPAD_LENGTH)
+    ;      scheduled-action scheduled-actions] ; TODO: make this NOT so naive
+    ;  (let [beat (xy->beat x y)
+    ;        beat-event (get-beat-event-kw beat)]
+    ;    (if )))))
 
 (defn assert-action-leds []
   (let [x LAUNCHPAD_LENGTH
-        on @active-action
+        on @active-action-number
         off (disj (set (range LAUNCHPAD_LENGTH)) on)]
     (domap #(draw-grid lpad x % :red :low) off)
     (draw-grid lpad x on :green :high)))
@@ -179,36 +234,36 @@
 ; actions
 ;
 
-; TODO: make it so actions can be scheduled in more than 1 place. the problem
-;       currently is that I have overlapping event-id's. another problem is how do
-;       i maintain state as to which actions are scheduled on which beats? that seems
-;       to be internal to metronome, so i don't want to double-up on work/memory...
-(def stop-action
-  {:id "stop"
+(defn unschedule-action
+  ([] (domap unschedule-action @scheduled-actions)) ; TODO: make this specific because 
+  ([scheduled-action]                           ;       right now it's dumb and slow
+    (let [handle (:handle scheduled-action)]
+      (println "handle: " handle)
+      (remove-handler handle) ; unstage event
+      (swap! scheduled-actions (fn [prev] (dissoc prev handle))) ; remove from schedule
+      (assert-grid-leds))))
+
+(defn schedule-action ; scheduled actions are actions with an event handle
+  [action beat]
+  (let [beat-event-kw (get-beat-event-kw beat)
+        handle (make-handle action beat)
+        callback (:callback action)
+        scheduled-action (assoc action :handle handle)]
+    (on-event beat-event-kw callback handle)
+    (swap! scheduled-actions
+      (fn [prev] (assoc prev handle scheduled-action)))))
+
+(def stop-action ; actions have a name and an event callback
+  {:name "stop"
    :callback (fn [event] (println "stop-action called!"))})
 
 (defn action-button
   [x y pressed?]
   (if pressed?
     (do 
-      (set-atom! active-action y)
+      (set-atom! active-action-number y)
       (assert-action-leds))))
 
-(def null-action
-  {:id "null"
-   :callback (fn [event] (println "null-action called!"))})
-
-(def actions
-  (atom (vec (repeat LAUNCHPAD_LENGTH null-action))))
-
-(defn insert-action
-  [action i]
-  (swap! actions (fn [prev] (assoc prev i action))))
-
-(insert-action stop-action 0)
-
-(defn get-action [i]
-  (nth @actions i))
 
 ;
 ; special button methods
@@ -242,7 +297,7 @@
 
       (do ; storyboard on stuff
         (at (m beat)
-          (event (get-event-name x y)) ; trigger any scheduled actions
+          (event (get-beat-event-kw beat)) ; trigger any scheduled actions
           (draw-grid lpad prevx prevy :off) ; turn off previous pos LED
           (draw-grid lpad x y :orange :high)) ; turn on current pos LED
           ;(quick-kick :amp 0.5))
@@ -276,11 +331,8 @@
       (cond ; when button is pressed
         tracker-ready? (draw-grid lpad x y :green :high)
         (not tracker-ready?)
-        (let [event-name (get-event-name x y)
-              action (get-action @active-action)
-              action-callback (:callback action)
-              action-id (:id action)]
-          (oneshot-event event-name action-callback action-id)
+        (let [action (get-action @active-action-number)]
+          (schedule-action action beat)
           (assert-grid-leds)
           (draw-grid lpad x y :green :low)))
 
@@ -321,6 +373,10 @@
 ;
 ; startup stuff
 ;
+
+; set actions
+(set-action stop-action 0)
+
 
 ; set grid buttons
 (doall
