@@ -1,5 +1,5 @@
 (ns beatfn-live.core
-  (:use 
+  (:use
     [overtone.live]
     [beatfn-live.launchpad]
     [overtone.inst.drum :only [quick-kick haziti-clap soft-hat open-hat]]))
@@ -16,7 +16,7 @@
 (on-event [:midi nil]
 	(fn [e]
    (if (= (:name (:device e)) "VirMIDI [hw:4,0,1]")
-    (do 
+    (do
      ;(println "e's name: " (:name (:device e)))
      ;(doall (map println e))
      (if (= (:status e) :start)
@@ -28,7 +28,7 @@
   		  ;(def m (atom (metronome 128)))
         (metro-start m 1)
   	    (println "END"))))))
-	::keyboard-handler)
+	::keyboard-action)
 
 (defn player
   [beat]
@@ -49,7 +49,6 @@
           (soft-hat :decay 0.03)))
 
     (apply-at (@m next-beat) #'player [next-beat])))
-
 
 ; --------------- Output Stuff -----------------------
 
@@ -89,7 +88,7 @@
                              ; 2: playing with LED green
 
 (def null-action
-  {:name "null"
+  {:name :null
    :callback (fn [event] (println "null-action called!"))})
 
 ; vector of actions which are currently loaded
@@ -99,10 +98,9 @@
 (def active-action-number (atom 0))
 
 ; a map k/v'd with:
-; {beat-event {action-handle1 scheduled-action1
-;              action-handle2 scheduled-action2} }
+; {beat-event {action-name1 scheduled-action1
+;              action-name2 scheduled-action2} }
 (def scheduled-actions (atom {}))
-
 
 
 ;
@@ -117,14 +115,9 @@
   ([] (get-action @active-action-number)) ; if no args, return active action
   ([i] (nth @action-bank i)))
 
-(defn get-beat-event-kw [beat] (keyword (str "action" beat)))
-
-(defn make-handle [action beat]
-  (keyword (str (:name action) beat)))
+(defn get-beat-event [beat] (keyword (str "beat-event" (mod beat LAUNCHPAD_AREA))))
 
 (defn null-callback [x y pressed?] nil)
-
-
 
 (defn domap [& args]
   (doall (apply map args)))
@@ -147,7 +140,7 @@
 
 (defn set-line
   [lpad orientation line color intensity start end]
-  (cond 
+  (cond
     (= orientation "row")
     (domap #(draw-grid lpad % line color intensity) (range start end))
     (= orientation "column")
@@ -192,29 +185,32 @@
 (defn assert-tracker-state-leds []
   (let [x (:x tracker-state-loc)
         y (:y tracker-state-loc)]
-    (cond 
+    (cond
       (= 0 @tracker-state) (draw-grid lpad x y :off)
       (= 1 @tracker-state) (draw-grid lpad x y :orange :low)
       (= 2 @tracker-state) (draw-grid lpad x y :green :low))))
 
  ; TODO: make this do something with scheduled-actions
+
+
+; TODO: fix this, dunno why it's shining the wrong LEDs
+(defn assert-grid-led [x y active-action scheduled-actions]
+  (let [beat (xy->beat x y)
+        beat-event (get-beat-event beat)
+        possible-actions (beat-event scheduled-actions)
+        matching-action ((:name active-action) possible-actions)]
+    (println "hi! x: " x " y: " y)
+    (cond 
+      (empty? possible-actions) (draw-grid lpad x y :off)
+      (not (nil? matching-action)) (draw-grid lpad x y :green :med)
+      :else (draw-grid lpad x y :red :low))))
+
 (defn assert-grid-leds []
   (let [active-action (get-action)
         scheduled-actions @scheduled-actions]
     (for [y (range LAUNCHPAD_LENGTH)
           x (range LAUNCHPAD_LENGTH)]
-      (let [beat (xy->beat x y)
-            beat-event-kw (get-beat-event-kw beat)]
-            (println "assert-grid-leds called!")))))
-
-    
-
-    ;(for [x (range LAUNCHPAD_LENGTH)
-    ;      y (range LAUNCHPAD_LENGTH)
-    ;      scheduled-action scheduled-actions] ; TODO: make this NOT so naive
-    ;  (let [beat (xy->beat x y)
-    ;        beat-event (get-beat-event-kw beat)]
-    ;    (if )))))
+      (assert-grid-led x y active-action scheduled-actions))))
 
 (defn assert-action-leds []
   (let [x LAUNCHPAD_LENGTH
@@ -224,7 +220,7 @@
     (draw-grid lpad x on :green :high)))
 
 (defn assert-leds []
-  (do 
+  (do
     (assert-grid-leds)
     (assert-tracker-state-leds)
     (assert-action-leds)))
@@ -234,34 +230,58 @@
 ; actions
 ;
 
+(defn get-action-handle [scheduled-action]
+  (let [beat-event (:beat-event scheduled-action)
+        name (:name scheduled-action)]
+    (str beat-event name)))
+
 (defn unschedule-action
-  ([] (domap unschedule-action @scheduled-actions)) ; TODO: make this specific because 
-  ([scheduled-action]                           ;       right now it's dumb and slow
-    (let [handle (:handle scheduled-action)]
-      (println "handle: " handle)
-      (remove-handler handle) ; unstage event
-      (swap! scheduled-actions (fn [prev] (dissoc prev handle))) ; remove from schedule
+  ([] (domap unschedule-action @scheduled-actions)) ; TODO: make this specific because
+  ([scheduled-action]                               ;       right now it's dumb and slow
+    (let [action-handle (get-action-handle scheduled-action)
+          beat-event (:beat-event scheduled-action)]
+      (remove-handler action-handle) ; unstage event
+      (swap! scheduled-actions
+        (fn [prev]
+          (let [prev-actions (beat-event prev)
+                new-actions (dissoc prev-actions (:name scheduled-action))]
+            (if (empty? new-actions)
+              (dissoc prev beat-event)
+              (assoc prev beat-event new-actions)))))
       (assert-grid-leds))))
 
-(defn schedule-action ; scheduled actions are actions with an event handle
-  [action beat]
-  (let [beat-event-kw (get-beat-event-kw beat)
-        handle (make-handle action beat)
-        callback (:callback action)
-        scheduled-action (assoc action :handle handle)]
-    (on-event beat-event-kw callback handle)
+(defn make-event-fn [scheduled-action]
+  (fn [event]
+    (do ((:callback scheduled-action) event)
+        (unschedule-action scheduled-action))))
+
+(defn schedule-action ; scheduled actions are actions scheduled
+  [action beat]       ; for a beat-event 
+  (let [beat-event (get-beat-event beat)
+        scheduled-action (assoc action :beat-event beat-event)
+        action-handle (get-action-handle scheduled-action)
+        callback (make-event-fn scheduled-action)]
+
+    ; first schedule the overtone event call
+    (on-event beat-event (make-event-fn scheduled-action) action-handle)
+
+    ; now store this scheduled action
     (swap! scheduled-actions
-      (fn [prev] (assoc prev handle scheduled-action)))))
+      (fn [prev]
+        (let [prev-actions (beat-event prev)
+              new-actions (assoc prev-actions (:name action) scheduled-action)]
+        (assoc prev beat-event new-actions))))))
 
 (def stop-action ; actions have a name and an event callback
-  {:name "stop"
+  {:name :stop
    :callback (fn [event] (println "stop-action called!"))})
 
 (defn action-button
   [x y pressed?]
   (if pressed?
-    (do 
+    (do
       (set-atom! active-action-number y)
+      (assert-grid-leds)
       (assert-action-leds))))
 
 
@@ -272,7 +292,7 @@
 (defn tracker-state-button
   [x y pressed?]
   (if pressed?
-    (cond 
+    (cond
       (= 0 @tracker-state)
         (set-atom! tracker-state 1)
       (= 1 @tracker-state)
@@ -293,11 +313,11 @@
   (let [next-beat (inc beat)
        [x y] (get-tracker-pos beat)
        [prevx prevy] (get-tracker-pos (- beat 1))]
-    (if @storyboard-on?   
+    (if @storyboard-on?
 
       (do ; storyboard on stuff
         (at (m beat)
-          (event (get-beat-event-kw beat)) ; trigger any scheduled actions
+          (event (get-beat-event beat)) ; trigger any scheduled actions
           (draw-grid lpad prevx prevy :off) ; turn off previous pos LED
           (draw-grid lpad x y :orange :high)) ; turn on current pos LED
           ;(quick-kick :amp 0.5))
