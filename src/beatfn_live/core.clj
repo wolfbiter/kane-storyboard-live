@@ -77,12 +77,15 @@
 ; global definitions
 ;
 
+(def NUM_DECKS 2) ; max of 4, check out assert-deck-state-led and
+                  ; assert-grid-led whenever you change this number!!!
 (def LAUNCHPAD_LENGTH 8)
 (def LAUNCHPAD_AREA (* LAUNCHPAD_LENGTH LAUNCHPAD_LENGTH))
 (def BPM 128)
 (def lpad (open))
 (def m (metronome BPM))
-(def storyboard-on? (atom false))
+(def deck-state (atom 0)) ; the number of the currently active deck
+(def repeat-state (atom 0)) ; 0 for repeat off, 1 for repeat on
 (def tracker-state (atom 1)) ; 0: paused with LED off
                              ; 1: ready with LED orange
                              ; 2: playing with LED green
@@ -98,14 +101,25 @@
 (def active-action-number (atom 0))
 
 ; a map k/v'd with:
-; {beat-event {action-name1 scheduled-action1
-;              action-name2 scheduled-action2} }
+; {beat-event {deck0 {action-event1 scheduled-action1
+;                    action-event2 scheduled-action2}
+;              deck1 {action-event}
+;}
 (def scheduled-actions (atom {}))
 
 
 ;
 ; utilities
 ;
+
+(defn get-deck-state-kw [deck] (keyword (str "deck" deck)))
+
+(defn get-action-handle 
+  [scheduled-action]
+    (let [beat-event (:beat-event scheduled-action)
+          name (:name scheduled-action)
+          deck-state (get-deck-state-kw @deck-state)]
+      (keyword (str beat-event "deck" deck-state name))))
 
 (defn set-action
   [action i]
@@ -115,7 +129,8 @@
   ([] (get-action @active-action-number)) ; if no args, return active action
   ([i] (nth @action-bank i)))
 
-(defn get-beat-event [beat] (keyword (str "beat-event" (mod beat LAUNCHPAD_AREA))))
+(defn get-beat-event [beat]
+  (keyword (str "beat-event" (mod beat LAUNCHPAD_AREA))))
 
 (defn null-callback [x y pressed?] nil)
 
@@ -176,13 +191,15 @@
 
 ; TODO: turn special buttons into maps of location and callback
 (def tracker-state-loc {:x 4 :y 8})
+(def deck-state-loc {:x 7 :y 8})
+(def repeat-state-loc {:x 5 :y 8})
 
 
 ;
 ; led assertions
 ;
 
-(defn assert-tracker-state-leds []
+(defn assert-tracker-state-led []
   (let [x (:x tracker-state-loc)
         y (:y tracker-state-loc)]
     (cond
@@ -190,27 +207,46 @@
       (= 1 @tracker-state) (draw-grid lpad x y :orange :low)
       (= 2 @tracker-state) (draw-grid lpad x y :green :low))))
 
- ; TODO: make this do something with scheduled-actions
+(defn assert-deck-state-led []
+  (let [x (:x deck-state-loc)
+        y (:y deck-state-loc)]
+    (cond
+      (= 0 @deck-state) (draw-grid lpad x y :red :low)
+      (= 1 @deck-state) (draw-grid lpad x y :orange :low))))
 
+(defn assert-repeat-state-led []
+  (let [x (:x repeat-state-loc)
+        y (:y repeat-state-loc)]
+    (cond
+      (= 0 @repeat-state) (draw-grid lpad x y :off)
+      (= 1 @repeat-state) (draw-grid lpad x y :green :low))))
 
-; TODO: fix this, dunno why it's shining the wrong LEDs
-(defn assert-grid-led [x y active-action scheduled-actions]
-  (let [beat (xy->beat x y)
-        beat-event (get-beat-event beat)
-        possible-actions (beat-event scheduled-actions)
-        matching-action ((:name active-action) possible-actions)]
-    (println "hi! x: " x " y: " y)
-    (cond 
-      (empty? possible-actions) (draw-grid lpad x y :off)
-      (not (nil? matching-action)) (draw-grid lpad x y :green :med)
-      :else (draw-grid lpad x y :red :low))))
+(defn assert-grid-led
+  ([x y] (assert-grid-led x y (get-action) @scheduled-actions))
+  ([x y active-action scheduled-actions]
+    (let [beat (xy->beat x y)
+          beat-event (get-beat-event beat)
+          active-deck @deck-state
+          deck-state (get-deck-state-kw @deck-state)
+          possible-actions (deck-state (beat-event scheduled-actions))
+          matching-action ((:name active-action) possible-actions)
+          left-deck? (= 0 active-deck)]
+      (cond 
+        (empty? possible-actions) (draw-grid lpad x y :off)
+        (not (nil? matching-action)) (draw-grid lpad x y :green :low)
+        :else (draw-grid lpad x y (if left-deck? :red :orange) :low)))))
 
+; TODO: make this be smarter by checking only the squares with scheduled actions
+; TODO: make this know tracker pos so it doesn't wipe the tracker led
+; TODO: maybe make it so the other deck's scheduled events are present?
+; TODO: should the inactive scheduled actions be red or red and orange?
 (defn assert-grid-leds []
   (let [active-action (get-action)
         scheduled-actions @scheduled-actions]
-    (for [y (range LAUNCHPAD_LENGTH)
-          x (range LAUNCHPAD_LENGTH)]
-      (assert-grid-led x y active-action scheduled-actions))))
+    (doall
+      (for [y (range LAUNCHPAD_LENGTH)
+            x (range LAUNCHPAD_LENGTH)]
+        (assert-grid-led x y active-action scheduled-actions)))))
 
 (defn assert-action-leds []
   (let [x LAUNCHPAD_LENGTH
@@ -220,45 +256,51 @@
     (draw-grid lpad x on :green :high)))
 
 (defn assert-leds []
-  (do
-    (assert-grid-leds)
-    (assert-tracker-state-leds)
-    (assert-action-leds)))
+  (assert-tracker-state-led)
+  (assert-deck-state-led)
+  (assert-repeat-state-led)
+  (assert-action-leds)
+  (assert-grid-leds))
 
 
 ;
 ; actions
 ;
 
-(defn get-action-handle [scheduled-action]
-  (let [beat-event (:beat-event scheduled-action)
-        name (:name scheduled-action)]
-    (str beat-event name)))
-
+; TODO: make unscheduling all actions not so dumb!
 (defn unschedule-action
-  ([] (domap unschedule-action @scheduled-actions)) ; TODO: make this specific because
-  ([scheduled-action]                               ;       right now it's dumb and slow
+  ([] (domap unschedule-action @scheduled-actions)) 
+  ([scheduled-action]
     (let [action-handle (get-action-handle scheduled-action)
           beat-event (:beat-event scheduled-action)]
       (remove-handler action-handle) ; unstage event
-      (swap! scheduled-actions
+      (swap! scheduled-actions ; remove action from scheduled actions
         (fn [prev]
-          (let [prev-actions (beat-event prev)
-                new-actions (dissoc prev-actions (:name scheduled-action))]
+          (let [deck-state (get-deck-state-kw @deck-state)
+                prev-decks (beat-event prev)
+                prev-actions (deck-state prev-decks)
+                new-actions (dissoc prev-actions (:name scheduled-action))
+                new-decks (assoc prev-decks deck-state new-actions)]
             (if (empty? new-actions)
               (dissoc prev beat-event)
-              (assoc prev beat-event new-actions)))))
-      (assert-grid-leds))))
+              (assoc prev beat-event new-decks))))))))
+      ;(assert-grid-led x y)))) ; TODO: can this be added?
 
 (defn make-event-fn [scheduled-action]
-  (fn [event]
-    (do ((:callback scheduled-action) event)
-        (unschedule-action scheduled-action))))
+  (let [callback (:callback scheduled-action)
+        repeat? (:repeat? scheduled-action)]
+    (if repeat?
+      callback
+      #(do (callback %)
+           (unschedule-action scheduled-action)))))
 
 (defn schedule-action ; scheduled actions are actions scheduled
   [action beat]       ; for a beat-event 
   (let [beat-event (get-beat-event beat)
-        scheduled-action (assoc action :beat-event beat-event)
+        scheduled-action  (assoc action :beat-event beat-event :beat beat)
+        scheduled-action  (if (= 1 @repeat-state) ; make this repeat if repeat is on
+                            (assoc scheduled-action :repeat? true)
+                            scheduled-action)
         action-handle (get-action-handle scheduled-action)
         callback (make-event-fn scheduled-action)]
 
@@ -268,21 +310,24 @@
     ; now store this scheduled action
     (swap! scheduled-actions
       (fn [prev]
-        (let [prev-actions (beat-event prev)
-              new-actions (assoc prev-actions (:name action) scheduled-action)]
-        (assoc prev beat-event new-actions))))))
-
-(def stop-action ; actions have a name and an event callback
-  {:name :stop
-   :callback (fn [event] (println "stop-action called!"))})
+        (let [deck-state (get-deck-state-kw @deck-state)
+              prev-decks (beat-event prev)
+              prev-actions (deck-state prev-decks)
+              new-actions (assoc prev-actions (:name action) scheduled-action)
+              new-decks (assoc prev-decks deck-state new-actions)]
+          (assoc prev beat-event new-decks))))))
 
 (defn action-button
   [x y pressed?]
   (if pressed?
     (do
       (set-atom! active-action-number y)
-      (assert-grid-leds)
-      (assert-action-leds))))
+      (assert-action-leds)
+      (assert-grid-leds))))
+
+(def stop-action ; actions have a name and event callback
+  {:name :stop
+   :callback (fn [event] (println "stop-action called!"))})
 
 
 ;
@@ -298,10 +343,23 @@
       (= 1 @tracker-state)
         (set-atom! tracker-state 0)
       (= 2 @tracker-state)
-        (do
-          (set-atom! tracker-state 1)
-          (set-atom! storyboard-on? false))))
-  (assert-tracker-state-leds))
+          (set-atom! tracker-state 1)))
+  (assert-tracker-state-led))
+
+(defn deck-state-button
+  [x y pressed?]
+  (do 
+    (if pressed?
+      (swap! deck-state (fn [prev] (mod (inc prev) NUM_DECKS))))
+    (assert-deck-state-led)
+    (assert-grid-leds)))
+
+(defn repeat-state-button
+  [x y pressed?]
+  (do 
+    (if pressed?
+      (swap! repeat-state (fn [prev] (mod (inc prev) 2))))
+    (assert-repeat-state-led)))
 
 
 ;
@@ -312,19 +370,17 @@
   [lpad beat]
   (let [next-beat (inc beat)
        [x y] (get-tracker-pos beat)
+       storyboard-on? (= @tracker-state 2)
        [prevx prevy] (get-tracker-pos (- beat 1))]
-    (if @storyboard-on?
+    (assert-grid-led prevx prevy)
 
-      (do ; storyboard on stuff
+    (if storyboard-on?
+      (do
         (at (m beat)
           (event (get-beat-event beat)) ; trigger any scheduled actions
-          (draw-grid lpad prevx prevy :off) ; turn off previous pos LED
           (draw-grid lpad x y :orange :high)) ; turn on current pos LED
           ;(quick-kick :amp 0.5))
-        (apply-at (m next-beat) #'run-tracker [lpad next-beat]))
-
-      ; if storyboard is off, just turn off the previous LED
-      (draw-grid lpad prevx prevy :off))))
+        (apply-at (m next-beat) #'run-tracker [lpad next-beat])))))
 
 (defn start-storyboard
   ([] (start-storyboard 0 0))
@@ -332,9 +388,7 @@
     (let [beat (xy->beat x y)]
       (do (metro-start m beat)
           (set-atom! tracker-state 2)
-          (set-atom! storyboard-on? true)
-          ;(reset lpad)
-          (assert-leds)
+          (assert-tracker-state-led)
           (run-tracker lpad beat)))))
 
 
@@ -351,10 +405,16 @@
       (cond ; when button is pressed
         tracker-ready? (draw-grid lpad x y :green :high)
         (not tracker-ready?)
-        (let [action (get-action @active-action-number)]
-          (schedule-action action beat)
-          (assert-grid-leds)
-          (draw-grid lpad x y :green :low)))
+          (let [beat-event (get-beat-event beat)
+                deck-state (get-deck-state-kw @deck-state)
+                active-action (get-action)
+                possible-actions (deck-state (beat-event @scheduled-actions))
+                matching-action ((:name active-action) possible-actions)]
+            (if (nil? matching-action)
+              (schedule-action active-action beat)
+              (unschedule-action matching-action))
+            (assert-grid-led x y)))
+
 
       (cond ; when button is released
         tracker-ready? (start-storyboard x y)))))
@@ -407,6 +467,12 @@
 ; set special buttons
 (insert-callback tracker-state-button
   (:x tracker-state-loc) (:y tracker-state-loc))
+
+(insert-callback deck-state-button
+  (:x deck-state-loc) (:y deck-state-loc))
+
+(insert-callback repeat-state-button
+  (:x repeat-state-loc) (:y repeat-state-loc))
 
 ; set action buttons
 (domap #(insert-callback action-button LAUNCHPAD_LENGTH %) (range LAUNCHPAD_LENGTH))
