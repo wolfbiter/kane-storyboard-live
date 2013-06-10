@@ -90,6 +90,14 @@
                              ; 1: ready with LED orange
                              ; 2: playing with LED green
 
+; TODO: looping. make it so that you can select an area over which to loop
+; TODO: copy/paste regions. selection goes from top-left to bottom-right.
+; TODO: turn "decks" into "scenes". to make this really awesome, each scene needs
+;       a crossfader "prop"
+; TODO: instead of a 3-nested map, how about 2-nested with an array for an outer key?
+;       or maybe 3-nested, but with the outermost being scene?
+; TODO: figure out underlying clojure-launchpad stuff to get yellow/more intensities
+
 (def null-action
   {:name :null
    :callback (fn [event] (println "null-action called!"))})
@@ -151,7 +159,7 @@
 (defn get-tracker-pos [beat]
   (beat->xy (mod beat LAUNCHPAD_AREA)))
 
-; TODO: make the following functions able to specify a range, ie part of a line
+; TODO: make a function from the following 3 that allows filling in tl->br given 2 spots
 
 (defn set-line
   [lpad orientation line color intensity start end]
