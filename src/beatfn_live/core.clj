@@ -77,8 +77,8 @@
 ; global definitions
 ;
 
-(def NUM_SCENES 2) ; max of 4, check out assert-scene-state-led and
-                   ; assert-grid-led whenever you change this number!!!
+(def NUM_SCENES 2) ; max of 4, check out assert-scene-state-led if this changes
+(def NUM_BANKS 4) ; number of possible banks
 (def LAUNCHPAD_LENGTH 8)
 (def LAUNCHPAD_AREA (* LAUNCHPAD_LENGTH LAUNCHPAD_LENGTH))
 (def BPM 128)
@@ -86,28 +86,52 @@
 (def m (metronome BPM))
 (def scene-state (atom 0)) ; the number of the currently active scene
 (def bank-state (atom 0)) ; 0 for action bank,
-                          ; 1 for grid-editor-bank
-                          ; 2 for zoom-select-bank
+                          ; 1 for grid editor bank
+                          ; 2 for zoom select bank
+                          ; 3 unused atm
 
 (def repeat-state (atom 0)) ; 0 for repeat off, 1 for repeat on
 (def tracker-state (atom 1)) ; 0: paused with LED off
                              ; 1: ready with LED orange
                              ; 2: playing with LED green
 
-; TODO: scrolling through active actions
-; TODO: zooming
-; TODO: scene-select                             
+; TODO: scrolling through active actions (implementation: scrollthrough active bank?)
+; TODO: add zoom-select bank
+; TODO: move scene-select to arrows
 ; TODO: looping. make it so that you can select an area over which to loop
 ; TODO: copy/paste regions. selection goes from top-left to bottom-right.
 ; TODO: to make scenes really awesome, they each need a crossfader "prop"!
 ; TODO: figure out underlying clojure-launchpad stuff to get yellow/more intensities
 
+(defn null-callback [x y pressed?] nil)
+
 (def null-action
   {:name :null
    :callback (fn [event] (println "null-action called!"))})
 
-; vector of actions which are currently loaded
-(def action-bank (atom (vec (repeat LAUNCHPAD_LENGTH null-action))))
+; an endless vector of possible actions TODO: make it so this isn't finite length
+(def active-actions (atom (vec (repeat LAUNCHPAD_LENGTH null-action))))
+
+(defn make-bank []
+  (do (println "Money.")
+      (atom (vec (repeat LAUNCHPAD_LENGTH null-callback)))))
+
+; a vector of action buttons
+(def action-bank (make-bank))
+
+; vector of grid editor buttons TODO: finish this, requires editing grid-press,
+;                                     assert-grid-led, and writing fxns to fill this
+(def grid-editor-bank (make-bank))
+
+; vector of zoom select buttons TODO: finish this, requires editing grid-press,
+;                                     assert-grid-led, and writing fxns to fill this
+(def zoom-select-bank (make-bank))
+
+; vector of null actions
+(def null-bank (make-bank))
+
+; the currently loaded bank (which is a vector of functions)
+(def banks (atom [action-bank grid-editor-bank zoom-select-bank null-bank]))
 
 ; number which designates the currently active action.
 (def active-action-number (atom 0))
@@ -137,16 +161,14 @@
 
 (defn set-action
   [action i]
-  (swap! action-bank (fn [prev] (assoc prev i action))))
+  (swap! active-actions (fn [prev] (assoc prev i action))))
 
 (defn get-action
   ([] (get-action @active-action-number)) ; if no args, return active action
-  ([i] (nth @action-bank i)))
+  ([i] (nth @active-actions i)))
 
 (defn get-beat-event [beat]
   (keyword (str "beat-event" (mod beat LAUNCHPAD_AREA))))
-
-(defn null-callback [x y pressed?] nil)
 
 (defn domap [& args]
   (doall (apply map args)))
@@ -205,8 +227,9 @@
 
 ; TODO: turn special buttons into maps of location and callback
 (def tracker-state-loc {:x 4 :y 8})
-(def scene-state-loc {:x 7 :y 8})
 (def repeat-state-loc {:x 5 :y 8})
+(def scene-state-loc {:x 6 :y 8})
+(def bank-state-loc {:x 7 :y 8})
 
 
 ;
@@ -228,6 +251,15 @@
       (= 0 @scene-state) (draw-grid lpad x y :red :low)
       (= 1 @scene-state) (draw-grid lpad x y :orange :low))))
 
+(defn assert-bank-state-led []
+  (let [x (:x bank-state-loc)
+        y (:y bank-state-loc)]
+    (cond
+      (= 0 @bank-state) (draw-grid lpad x y :off)
+      (= 1 @bank-state) (draw-grid lpad x y :green :low)
+      (= 2 @bank-state) (draw-grid lpad x y :red :low)
+      (= 3 @bank-state) (draw-grid lpad x y :orange :low))))
+
 (defn assert-repeat-state-led []
   (let [x (:x repeat-state-loc)
         y (:y repeat-state-loc)]
@@ -235,44 +267,56 @@
       (= 0 @repeat-state) (draw-grid lpad x y :off)
       (= 1 @repeat-state) (draw-grid lpad x y :green :low))))
 
-(defn assert-grid-led
-  ([x y] (assert-grid-led x y (get-action) @scheduled-actions))
-  ([x y active-action scheduled-actions]
-    (let [beat (xy->beat x y)
-          beat-event (get-beat-event beat)
-          active-scene @scene-state
-          scene-state (get-scene-state-kw @scene-state)
-          possible-actions (scene-state (beat-event scheduled-actions))
-          matching-action ((:name active-action) possible-actions)]
-      (cond 
-        (empty? possible-actions) (draw-grid lpad x y :off)
-        (not (nil? matching-action)) (draw-grid lpad x y :green :low)
-        :else (draw-grid lpad x y :red :low)))))
+(defn assert-grid-led [x y]
+  (let [active-action (get-action)
+        scheduled-actions @scheduled-actions
+        beat (xy->beat x y)
+        beat-event (get-beat-event beat)
+        active-scene @scene-state
+        scene-state (get-scene-state-kw active-scene)
+        possible-actions (scene-state (beat-event scheduled-actions))
+        matching-action ((:name active-action) possible-actions)]
+    (cond 
+      (empty? possible-actions) (draw-grid lpad x y :off)
+      (not (nil? matching-action)) (draw-grid lpad x y :green :low)
+        :else (draw-grid lpad x y :red :low))))
 
 ; TODO: make this be smarter by checking only the squares with scheduled actions
 ; TODO: make this know tracker pos so it doesn't wipe the tracker led
 ; TODO: maybe make it so the other scene's scheduled events are present?
 ; TODO: should the inactive scheduled actions be red or red and orange?
 (defn assert-grid-leds []
-  (let [active-action (get-action)
-        scheduled-actions @scheduled-actions]
-    (doall
-      (for [y (range LAUNCHPAD_LENGTH)
-            x (range LAUNCHPAD_LENGTH)]
-        (assert-grid-led x y active-action scheduled-actions)))))
+  (doall
+    (for [x (range LAUNCHPAD_LENGTH)
+          y (range LAUNCHPAD_LENGTH)]
+      (assert-grid-led x y))))
 
-(defn assert-action-leds []
+(defn assert-bank-leds []
   (let [x LAUNCHPAD_LENGTH
-        on @active-action-number
-        off (disj (set (range LAUNCHPAD_LENGTH)) on)]
-    (domap #(draw-grid lpad x % :red :low) off)
-    (draw-grid lpad x on :green :high)))
+        bank-state @bank-state]
+    (cond
+
+      (= bank-state 0) ; action bank
+      (let [on @active-action-number
+            off (disj (set (range LAUNCHPAD_LENGTH)) on)]
+        (domap #(draw-grid lpad x % :red :low) off)
+        (draw-grid lpad x on :green :high))
+
+      (= bank-state 1) ; grid editor bank
+      (domap #(draw-grid lpad x % :green :low) (range LAUNCHPAD_LENGTH))
+
+      (= bank-state 2) ; zoom select bank
+      (domap #(draw-grid lpad x % :red :low) (range LAUNCHPAD_LENGTH))
+
+      (= bank-state 3) ; unused bank
+      (domap #(draw-grid lpad x % :orange :low) (range LAUNCHPAD_LENGTH)))))
 
 (defn assert-leds []
   (assert-tracker-state-led)
+  (assert-bank-state-led)
   (assert-scene-state-led)
   (assert-repeat-state-led)
-  (assert-action-leds)
+  (assert-bank-leds)
   (assert-grid-leds))
 
 
@@ -331,51 +375,62 @@
               new-scenes (assoc prev-scenes scene-state new-actions)]
           (assoc prev beat-event new-scenes))))))
 
-(defn action-button
-  [x y pressed?]
-  (if pressed?
-    (do
-      (set-atom! active-action-number y)
-      (assert-action-leds)
-      (assert-grid-leds))))
-
 (def stop-action ; actions have a name and event callback
   {:name :stop
-   :callback (fn [event] (haziti-clap :decay 0.05 :amp 0.3))})
-
- ;   (println "stop-action called!"))})
-
+   :callback #(println "stop-action called!" %)})
 
 ;
 ; special button methods
 ;
 
+(defn action-button
+  [x y pressed?]
+  (do
+    (set-atom! active-action-number y)
+    (assert-bank-leds)
+    (assert-grid-leds)))
+
+(defn bank-button
+  [x y pressed?]
+  (let [active-bank (nth @banks @bank-state)
+        bank-fn (nth @active-bank y)]
+    (bank-fn x y pressed?)))
+
 (defn tracker-state-button
   [x y pressed?]
   (if pressed?
-    (cond
-      (= 0 @tracker-state)
-        (set-atom! tracker-state 1)
-      (= 1 @tracker-state)
-        (set-atom! tracker-state 0)
-      (= 2 @tracker-state)
-          (set-atom! tracker-state 1)))
-  (assert-tracker-state-led))
+    (do
+      (cond
+        (= 0 @tracker-state)
+          (set-atom! tracker-state 1)
+        (= 1 @tracker-state)
+          (set-atom! tracker-state 0)
+        (= 2 @tracker-state)
+            (set-atom! tracker-state 1))
+      (assert-tracker-state-led))))
 
 (defn scene-state-button
   [x y pressed?]
-  (do 
     (if pressed?
-      (swap! scene-state (fn [prev] (mod (inc prev) NUM_SCENES))))
-    (assert-scene-state-led)
-    (assert-grid-leds)))
+      (do
+        (swap! scene-state (fn [prev] (mod (inc prev) NUM_SCENES)))
+        (assert-scene-state-led)
+        (assert-grid-leds))))
 
 (defn repeat-state-button
   [x y pressed?]
-  (do 
     (if pressed?
-      (swap! repeat-state (fn [prev] (mod (inc prev) 2))))
-    (assert-repeat-state-led)))
+      (do
+        (swap! repeat-state (fn [prev] (mod (inc prev) 2)))
+        (assert-repeat-state-led))))
+
+(defn bank-state-button
+  [x y pressed?]
+    (if pressed?
+      (do
+        (swap! bank-state (fn [prev] (mod (inc prev) NUM_BANKS)))
+        (assert-bank-state-led)
+        (assert-bank-leds))))
 
 
 ;
@@ -415,24 +470,33 @@
 (defn grid-press
   [x y pressed?]
   (let [beat (xy->beat x y)
-        tracker-ready? (= 1 @tracker-state)]
+        tracker-ready? (= 1 @tracker-state)
+        bank-state @bank-state]
     (if pressed?
 
-      (cond ; when button is pressed
-        tracker-ready? (draw-grid lpad x y :green :high)
-        (not tracker-ready?)
-          (let [beat-event (get-beat-event beat)
-                scene-state (get-scene-state-kw @scene-state)
-                active-action (get-action)
-                possible-actions (scene-state (beat-event @scheduled-actions))
-                matching-action ((:name active-action) possible-actions)]
-            (if (nil? matching-action)
-              (schedule-action active-action beat)
-              (unschedule-action matching-action))
-            (assert-grid-led x y)))
+      ; if button is pressed,
+      (cond
+        ; and tracker is ready,
+        tracker-ready?
+        (draw-grid lpad x y :green :high) ; light the pressed button green
 
+        ; else, do something based on current bank
+        (= bank-state 0) ; action bank
+        (let [beat-event (get-beat-event beat)
+              scene-state (get-scene-state-kw @scene-state)
+              active-action (get-action)
+              possible-actions (scene-state (beat-event @scheduled-actions))
+              matching-action ((:name active-action) possible-actions)]
+          (if (nil? matching-action)
+            (schedule-action active-action beat)
+            (unschedule-action matching-action))
+          (assert-grid-led x y))
 
-      (cond ; when button is released
+        ; TODO: make things for other banks!
+        :else (println "HI! current bank state:" bank-state))
+
+      ; when button is released
+      (cond
         tracker-ready? (start-storyboard x y)))))
         ;:else (draw-grid lpad x y :off)))))
 
@@ -470,9 +534,12 @@
 ; startup stuff
 ;
 
+; set bank buttons
+(domap #(insert-callback bank-button LAUNCHPAD_LENGTH %) (range LAUNCHPAD_LENGTH))
+(set-atom! action-bank (vec (repeat LAUNCHPAD_LENGTH action-button)))
+
 ; set actions
 (set-action stop-action 0)
-
 
 ; set grid buttons
 (doall
@@ -490,8 +557,9 @@
 (insert-callback repeat-state-button
   (:x repeat-state-loc) (:y repeat-state-loc))
 
-; set action buttons
-(domap #(insert-callback action-button LAUNCHPAD_LENGTH %) (range LAUNCHPAD_LENGTH))
+(insert-callback bank-state-button
+  (:x bank-state-loc) (:y bank-state-loc))
 
+; final ready steps
 (assert-leds)
 (on-grid-pressed lpad button-press)
