@@ -114,6 +114,8 @@
 ; TODO: copy/paste regions. selection goes from top-left to bottom-right.
 ; TODO: to make scenes really awesome, they each need a crossfader "prop"!
 ; TODO: figure out underlying clojure-launchpad stuff to get yellow/more intensities
+; TODO: need a way to specify volume of samples you are placing
+; TODO: need some way to preview stuff (headphones)
 
 (defn null-callback [x y pressed?] nil)
 
@@ -196,8 +198,9 @@
   [atom val]
   (swap! atom (fn [x] val)))
 
-(defn get-tracker-pos [beat]
-  (beat->xy (mod beat LAUNCHPAD_AREA)))
+(defn get-tracker-pos
+  ([] (get-tracker-pos (m)))
+  ([beat] (beat->xy (mod beat LAUNCHPAD_AREA))))
 
 ; TODO: make a function from the following 3 that allows filling in tl->br given 2 spots
 
@@ -279,6 +282,10 @@
       (= 0 @repeat-state) (draw-grid lpad x y :off)
       (= 1 @repeat-state) (draw-grid lpad x y :green :low))))
 
+(defn assert-tracker-led
+  ([] (apply assert-tracker-led (get-tracker-pos)))
+  ([x y] (draw-grid lpad x y :orange :high)))
+
 (defn assert-grid-led [x y]
   (let [active-action (get-action)
         scheduled-actions @scheduled-actions
@@ -298,10 +305,12 @@
 ; TODO: maybe make it so the other scene's scheduled events are present?
 ; TODO: should the inactive scheduled actions be red or red and orange?
 (defn assert-grid-leds []
-  (doall
-    (for [x (range LAUNCHPAD_LENGTH)
-          y (range LAUNCHPAD_LENGTH)]
-      (assert-grid-led x y))))
+  (do
+    (doall
+      (for [x (range LAUNCHPAD_LENGTH)
+            y (range LAUNCHPAD_LENGTH)]
+        (assert-grid-led x y)))
+    (assert-tracker-led)))
 
 (defn assert-bank-leds []
   (let [x LAUNCHPAD_LENGTH
@@ -448,16 +457,16 @@
 (defn run-tracker
   [lpad beat]
   (let [next-beat (inc beat)
-       [x y] (get-tracker-pos beat)
        storyboard-on? (= @tracker-state 2)
+       [x y] (get-tracker-pos beat)
        [prevx prevy] (get-tracker-pos (- beat 1))]
-    (assert-grid-led prevx prevy)
+    (assert-grid-led prevx prevy) ; revert previous tracker pos led
 
     (if storyboard-on?
       (do
         (at (m beat)
           (event (get-beat-event beat)) ; trigger any scheduled actions
-          (draw-grid lpad x y :orange :high) ; turn on current pos LED
+          (assert-tracker-led x y) ; turn on current pos LED
           (quick-kick :amp 0.5))
         (apply-at (m next-beat) #'run-tracker [lpad next-beat])))))
 
@@ -498,6 +507,10 @@
           (if (nil? matching-action)
             (schedule-action active-action beat)
             (unschedule-action matching-action))
+
+          ; TODO: test this
+          (if (:init active-action) ; run this action's init if it has one
+            ((:init active-action) x y pressed?))
           (assert-grid-led x y))
 
         ; TODO: make things for other banks!
@@ -553,7 +566,7 @@
       (at (+ (m start) offset)
           (sample)))))
 
-(def stop-action ; actions have a name and event callback
+(def stop-action ; actions have a name and event callback, plus possible init fn
   {:name :stop
    :callback #(println "stop-action called!" %)})
 
