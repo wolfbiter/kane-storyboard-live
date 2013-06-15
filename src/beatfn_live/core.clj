@@ -62,7 +62,19 @@
 (def freqTest (atom 1.0))
 
 (definst output [amp 1]
- (* amp (sound-in [0 1])))
+  (* amp (sound-in [0 1])))
+
+;(definst output [vol1 1.0 lpf1 1.0 rq 1.0]
+;  (let [vol-env1 (env-gen (adsr) :gate vol1 :action NO-ACTION)
+;        lpf-env1 (env-gen (adsr) :gate lpf1 :action NO-ACTION)]
+;        (rlpf (* vol-env1 (sound-in [0 1]))
+;              lpf-env1
+;              rq)))
+
+(def master-volume (output))
+
+; (ctl master-volume :vol1 1.0)
+;(def master-volume (output))
 
 ; (ctl lowpass :cutoff 10000 :res 1)
 (def lowpass (inst-fx! output fx-rlpf))
@@ -375,10 +387,6 @@
               new-scenes (assoc prev-scenes scene-state new-actions)]
           (assoc prev beat-event new-scenes))))))
 
-(def stop-action ; actions have a name and event callback
-  {:name :stop
-   :callback #(println "stop-action called!" %)})
-
 ;
 ; special button methods
 ;
@@ -539,7 +547,47 @@
 (set-atom! action-bank (vec (repeat LAUNCHPAD_LENGTH action-button)))
 
 ; set actions
-(set-action stop-action 0)
+(defn offset-sample [sample offset] ; offset is in units of milliseconds
+  (fn [event]
+    (let [start (m)]   ; start is in units of beats
+      (at (+ (m start) offset)
+          (sample)))))
+
+(def stop-action ; actions have a name and event callback
+  {:name :stop
+   :callback #(println "stop-action called!" %)})
+
+(defsynth washout []
+    (let [sample-buf (load-sample "resources/downlifters/VEH2 FX - 082.wav")
+          dry (play-buf 2 sample-buf)]
+      (out [0 1] (* dry 0.35))))
+
+(def washout {
+  :name :washout
+  :callback washout})
+
+(defsynth washin []
+    (let [sample-buf (load-sample "resources/uplifters/VEH2 FX - 061.wav")
+          dry (play-buf 2 sample-buf)]
+      (out [0 1] (* dry 0.35))))
+
+(def washin {
+  :name :washin
+  :callback (offset-sample washin 185)})
+
+(defsynth dropoff []
+    (let [sample-buf (load-sample "resources/downlifters/VEH2 FX - 065.wav")
+          dry (play-buf 2 sample-buf)]
+      (out [0 1] (* dry 0.35))))
+
+(def dropoff {
+  :name :dropoff
+  :callback dropoff})
+
+(set-action dropoff 0)
+(set-action washout 1)
+(set-action washin 2)
+(set-action stop-action 3)
 
 ; set grid buttons
 (doall
