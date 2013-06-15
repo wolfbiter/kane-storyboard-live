@@ -284,7 +284,7 @@
 
 (defn assert-tracker-led
   ([] (apply assert-tracker-led (get-tracker-pos)))
-  ([x y] (draw-grid lpad x y :orange :high)))
+  ([x y] (if (= 2 @tracker-state) (draw-grid lpad x y :orange :high))))
 
 (defn assert-grid-led [x y]
   (let [active-action (get-action)
@@ -559,49 +559,6 @@
 (domap #(insert-callback bank-button LAUNCHPAD_LENGTH %) (range LAUNCHPAD_LENGTH))
 (set-atom! action-bank (vec (repeat LAUNCHPAD_LENGTH action-button)))
 
-; set actions
-(defn offset-sample [sample offset] ; offset is in units of milliseconds
-  (fn [event]
-    (let [start (m)]   ; start is in units of beats
-      (at (+ (m start) offset)
-          (sample)))))
-
-(def stop-action ; actions have a name and event callback, plus possible init fn
-  {:name :stop
-   :callback #(println "stop-action called!" %)})
-
-(defsynth washout []
-    (let [sample-buf (load-sample "resources/downlifters/VEH2 FX - 082.wav")
-          dry (play-buf 2 sample-buf)]
-      (out [0 1] (* dry 0.35))))
-
-(def washout {
-  :name :washout
-  :callback washout})
-
-(defsynth washin []
-    (let [sample-buf (load-sample "resources/uplifters/VEH2 FX - 061.wav")
-          dry (play-buf 2 sample-buf)]
-      (out [0 1] (* dry 0.35))))
-
-(def washin {
-  :name :washin
-  :callback (offset-sample washin 185)})
-
-(defsynth dropoff []
-    (let [sample-buf (load-sample "resources/downlifters/VEH2 FX - 065.wav")
-          dry (play-buf 2 sample-buf)]
-      (out [0 1] (* dry 0.35))))
-
-(def dropoff {
-  :name :dropoff
-  :callback dropoff})
-
-(set-action dropoff 0)
-(set-action washout 1)
-(set-action washin 2)
-(set-action stop-action 3)
-
 ; set grid buttons
 (doall
   (for [x (range LAUNCHPAD_LENGTH)
@@ -624,3 +581,103 @@
 ; final ready steps
 (assert-leds)
 (on-grid-pressed lpad button-press)
+
+
+
+;
+; set actions
+;
+
+(def stop-action ; actions have a name and event callback, plus possible init fn
+  {:name :stop
+   :callback #(println "stop-action called!" %)})
+
+(defn offset-sample [sample offset] ; offset is in units of milliseconds
+  (fn [event]
+    (let [start (m)]   ; start is in units of beats
+      (at (+ (m start) offset)
+          (sample)))))
+
+(defsynth quick-washin [vol 0.4 rate 0.9]
+    (let [sample-buf (load-sample "resources/uplifters/VEH2 FX - 071.wav")
+          dry (play-buf 2 (buffer-id sample-buf) rate sample-buf)]
+      (out [0 1] (* dry vol))))
+
+(def quick-washin {
+  :name :quick-washin
+  :callback (offset-sample quick-washin 100)})
+
+(defsynth washin1 [vol 0.4]
+    (let [sample-buf (load-sample "resources/uplifters/VEH2 FX - 061.wav")
+          dry (play-buf 2 sample-buf)]
+      (out [0 1] (* dry vol))))
+
+(def washin1 {
+  :name :washin1
+  :callback (offset-sample washin1 185)})
+
+(defsynth washin2 [vol 0.4 rate 1.285]
+    (let [sample-buf (load-sample "resources/uplifters/VEH2 FX - 067.wav")
+          dry (play-buf 2 (buffer-id sample-buf) rate sample-buf)]
+      (out [0 1] (* dry vol))))
+
+(def washin2 {
+  :name :washin2
+  :callback washin2})
+
+(defsynth upzip [vol 0.4 rate 1.55]
+    (let [sample-buf (load-sample "resources/uplifters/VEH2 FX - 035.wav")
+          dry (play-buf 2 (buffer-id sample-buf) rate sample-buf)]
+      (out [0 1] (* dry vol))))
+
+(def upzip {
+  :name :upzip
+  :callback upzip})
+
+(defsynth washout1 [vol 0.35]
+    (let [sample-buf (load-sample "resources/downlifters/VEH2 FX - 081.wav")
+          dry (play-buf 2 sample-buf)]
+      (out [0 1] (* dry vol))))
+
+(def washout1 {
+  :name :washout1
+  :callback washout1})
+
+(defsynth washout2 [vol 0.3]
+    (let [sample-buf (load-sample "resources/downlifters/VEH2 FX - 084.wav")
+          dry (play-buf 2 sample-buf)]
+      (out [0 1] (* dry vol))))
+
+(def washout2 {
+  :name :washout2
+  :callback washout2})
+
+(defsynth dropout [vol 0.7]
+    (let [sample-buf (load-sample "resources/downlifters/VEH2 FX - 009.wav")
+          dry (play-buf 2 sample-buf)]
+      (out [0 1] (* dry vol))))
+
+(def dropout {
+  :name :dropout
+  :callback dropout})
+
+(defsynth liquid-dropout [vol 0.15]
+    (let [sample-buf (load-sample "resources/downlifters/VEH2 FX - 151.wav")
+          dry (play-buf 2 sample-buf)]
+      (out [0 1] (* dry vol))))
+
+(def liquid-dropout {
+  :name :liquid-dropout
+  :callback liquid-dropout})
+
+; uplifters
+(set-action quick-washin 0)
+(set-action washin1 1)
+(set-action washin2 2)
+(set-action upzip 3)
+
+;downlifters
+(set-action dropout 4)
+(set-action washout1 5)
+(set-action washout2 6)
+(set-action liquid-dropout 7)
