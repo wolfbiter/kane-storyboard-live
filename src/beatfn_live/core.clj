@@ -1,65 +1,12 @@
 (ns beatfn-live.core
   (:use
     [overtone.live]
+    [beatfn-live.metronome]
+    [beatfn-live.samples]
     [beatfn-live.launchpad]
     [overtone.inst.drum :only [quick-kick haziti-clap soft-hat open-hat]]))
 
-(def m (atom (metronome 128)))
-
-(def latency (atom 100))
-
-(def raw-notes [:c3 :g3 :c3])
-
-; TODO: turn this into a map of note and freq
-(def notes (flatten (map #(list % ((comp midi->hz note) %)) [:c3 :g3 :c3])))
-
-(on-event [:midi nil]
-	(fn [e]
-   (if (= (:name (:device e)) "VirMIDI [hw:4,0,1]")
-    (do
-     ;(println "e's name: " (:name (:device e)))
-     ;(doall (map println e))
-     (if (= (:status e) :start)
-       (do
-        (println "START")
-   		  ;(doall (map println e))
-  		  (println "message timestamp:" (:timestamp e))
-        (println "now: " (now))
-  		  ;(def m (atom (metronome 128)))
-        (metro-start m 1)
-  	    (println "END"))))))
-	::keyboard-action)
-
-(defn player
-  [beat]
-  (let [next-beat (inc beat)]
-    (at (- (@m beat) @latency)
-        (quick-kick :amp 0.5)
-        (if (zero? (mod beat 2))
-          (open-hat :amp 0.1)))
-    (at (- (@m (+ 0.5 beat)) @latency)
-        (haziti-clap :decay 0.05 :amp 0.3))
-
-    (when (zero? (mod beat 3))
-      (at (- (@m (+ 0.75 beat)) @latency)
-          (soft-hat :decay 0.03 :amp 0.2)))
-
-    (when (zero? (mod beat 8))
-      (at (- (@m (+ 1.25 beat)) @latency)
-          (soft-hat :decay 0.03)))
-
-    (apply-at (@m next-beat) #'player [next-beat])))
-
 ; --------------- Output Stuff -----------------------
-
-(definst dubstep [freq 100 wobble-freq 2]
-  (let [sweep (lin-exp (lf-saw wobble-freq) -1 1 40 5000)
-        son (mix (saw (* freq [0.99 1 1.01])))]
-    (lpf son sweep)))
-
-(def default-env (lin-exp (lf-saw 1) -1 1 40 5000))
-
-(def freqTest (atom 1.0))
 
 (definst output [amp 1]
   (* amp (sound-in [0 1])))
@@ -83,7 +30,7 @@
 (def highpass (inst-fx! output fx-rhpf))
 
 
-; --------------- Launchpad Stuff --------------------
+; --------------- Storyboard Stuff --------------------
 
 ;
 ; global definitions
@@ -93,9 +40,7 @@
 (def NUM_BANKS 4) ; number of possible banks
 (def LAUNCHPAD_LENGTH 8)
 (def LAUNCHPAD_AREA (* LAUNCHPAD_LENGTH LAUNCHPAD_LENGTH))
-(def BPM 128)
 (def lpad (open))
-(def m (metronome BPM))
 (def scene-state (atom 0)) ; the number of the currently active scene
 (def bank-state (atom 0)) ; 0 for action bank,
                           ; 1 for grid editor bank
@@ -466,8 +411,8 @@
       (do
         (at (m beat)
           (event (get-beat-event beat)) ; trigger any scheduled actions
-          (assert-tracker-led x y) ; turn on current pos LED
-          (quick-kick :amp 0.5))
+          (assert-tracker-led x y)) ; turn on current pos LED
+;          (quick-kick :amp 0.5))
         (apply-at (m next-beat) #'run-tracker [lpad next-beat])))))
 
 (defn start-storyboard
@@ -555,6 +500,14 @@
 ; startup stuff
 ;
 
+; set actions
+(set-action rand-uplift4 0)
+(set-action rand-uplift8 1)
+(set-action rand-uplift16 2)
+(set-action rand-downlift-crash 3)
+(set-action rand-downlift-explode 4)
+(set-action rand-downlift-fx 5)
+
 ; set bank buttons
 (domap #(insert-callback bank-button LAUNCHPAD_LENGTH %) (range LAUNCHPAD_LENGTH))
 (set-atom! action-bank (vec (repeat LAUNCHPAD_LENGTH action-button)))
@@ -581,103 +534,3 @@
 ; final ready steps
 (assert-leds)
 (on-grid-pressed lpad button-press)
-
-
-
-;
-; set actions
-;
-
-(def stop-action ; actions have a name and event callback, plus possible init fn
-  {:name :stop
-   :callback #(println "stop-action called!" %)})
-
-(defn offset-sample [sample offset] ; offset is in units of milliseconds
-  (fn [event]
-    (let [start (m)]   ; start is in units of beats
-      (at (+ (m start) offset)
-          (sample)))))
-
-(defsynth quick-washin [vol 0.4 rate 0.9]
-    (let [sample-buf (load-sample "resources/uplifters/VEH2 FX - 071.wav")
-          dry (play-buf 2 (buffer-id sample-buf) rate sample-buf)]
-      (out [0 1] (* dry vol))))
-
-(def quick-washin {
-  :name :quick-washin
-  :callback (offset-sample quick-washin 100)})
-
-(defsynth washin1 [vol 0.4]
-    (let [sample-buf (load-sample "resources/uplifters/VEH2 FX - 061.wav")
-          dry (play-buf 2 sample-buf)]
-      (out [0 1] (* dry vol))))
-
-(def washin1 {
-  :name :washin1
-  :callback (offset-sample washin1 185)})
-
-(defsynth washin2 [vol 0.4 rate 1.285]
-    (let [sample-buf (load-sample "resources/uplifters/VEH2 FX - 067.wav")
-          dry (play-buf 2 (buffer-id sample-buf) rate sample-buf)]
-      (out [0 1] (* dry vol))))
-
-(def washin2 {
-  :name :washin2
-  :callback washin2})
-
-(defsynth upzip [vol 0.4 rate 1.55]
-    (let [sample-buf (load-sample "resources/uplifters/VEH2 FX - 035.wav")
-          dry (play-buf 2 (buffer-id sample-buf) rate sample-buf)]
-      (out [0 1] (* dry vol))))
-
-(def upzip {
-  :name :upzip
-  :callback upzip})
-
-(defsynth washout1 [vol 0.35]
-    (let [sample-buf (load-sample "resources/downlifters/VEH2 FX - 081.wav")
-          dry (play-buf 2 sample-buf)]
-      (out [0 1] (* dry vol))))
-
-(def washout1 {
-  :name :washout1
-  :callback washout1})
-
-(defsynth washout2 [vol 0.3]
-    (let [sample-buf (load-sample "resources/downlifters/VEH2 FX - 084.wav")
-          dry (play-buf 2 sample-buf)]
-      (out [0 1] (* dry vol))))
-
-(def washout2 {
-  :name :washout2
-  :callback washout2})
-
-(defsynth dropout [vol 0.7]
-    (let [sample-buf (load-sample "resources/downlifters/VEH2 FX - 009.wav")
-          dry (play-buf 2 sample-buf)]
-      (out [0 1] (* dry vol))))
-
-(def dropout {
-  :name :dropout
-  :callback dropout})
-
-(defsynth liquid-dropout [vol 0.15]
-    (let [sample-buf (load-sample "resources/downlifters/VEH2 FX - 151.wav")
-          dry (play-buf 2 sample-buf)]
-      (out [0 1] (* dry vol))))
-
-(def liquid-dropout {
-  :name :liquid-dropout
-  :callback liquid-dropout})
-
-; uplifters
-(set-action quick-washin 0)
-(set-action washin1 1)
-(set-action washin2 2)
-(set-action upzip 3)
-
-;downlifters
-(set-action dropout 4)
-(set-action washout1 5)
-(set-action washout2 6)
-(set-action liquid-dropout 7)
