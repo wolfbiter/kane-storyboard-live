@@ -1,10 +1,11 @@
 (ns beatfn-live.core
   (:use
     [overtone.live]
-    [beatfn-live.metronome]
+    [beatfn-live.globals]
     [beatfn-live.samples]
     [beatfn-live.launchpad]
     [overtone.inst.drum :only [quick-kick haziti-clap soft-hat open-hat]]))
+
 
 ; --------------- Output Stuff -----------------------
 
@@ -32,78 +33,7 @@
 
 ; --------------- Storyboard Stuff --------------------
 
-;
-; global definitions
-;
-
-(def NUM_SCENES 2) ; max of 4, check out assert-scene-state-led if this changes
-(def NUM_BANKS 4) ; number of possible banks
-(def LAUNCHPAD_LENGTH 8)
-(def LAUNCHPAD_AREA (* LAUNCHPAD_LENGTH LAUNCHPAD_LENGTH))
 (def lpad (open))
-(def scene-state (atom 0)) ; the number of the currently active scene
-(def bank-state (atom 0)) ; 0 for action bank,
-                          ; 1 for grid editor bank
-                          ; 2 for zoom select bank
-                          ; 3 unused atm
-
-(def repeat-state (atom 0)) ; 0 for repeat off, 1 for repeat on
-(def tracker-state (atom 1)) ; 0: paused with LED off
-                             ; 1: ready with LED orange
-                             ; 2: playing with LED green
-
-; TODO: scrolling through active actions (implementation: scrollthrough active bank?)
-; TODO: add zoom-select bank
-; TODO: move scene-select to arrows
-; TODO: looping. make it so that you can select an area over which to loop
-; TODO: copy/paste regions. selection goes from top-left to bottom-right.
-; TODO: to make scenes really awesome, they each need a crossfader "prop"!
-; TODO: figure out underlying clojure-launchpad stuff to get yellow/more intensities
-; TODO: need a way to specify volume of samples you are placing
-; TODO: need some way to preview stuff (headphones)
-
-(defn null-callback [x y pressed?] nil)
-
-(def null-action
-  {:name :null
-   :callback (fn [event] (println "null-action called!"))})
-
-; an endless vector of possible actions TODO: make it so this isn't finite length
-(def active-actions (atom (vec (repeat LAUNCHPAD_LENGTH null-action))))
-
-(defn make-bank []
-  (do (println "Money.")
-      (atom (vec (repeat LAUNCHPAD_LENGTH null-callback)))))
-
-; a vector of action buttons
-(def action-bank (make-bank))
-
-; vector of grid editor buttons TODO: finish this, requires editing grid-press,
-;                                     assert-grid-led, and writing fxns to fill this
-(def grid-editor-bank (make-bank))
-
-; vector of zoom select buttons TODO: finish this, requires editing grid-press,
-;                                     assert-grid-led, and writing fxns to fill this
-(def zoom-select-bank (make-bank))
-
-; vector of null actions
-(def null-bank (make-bank))
-
-; the currently loaded bank (which is a vector of functions)
-(def banks (atom [action-bank grid-editor-bank zoom-select-bank null-bank]))
-
-; number which designates the currently active action.
-(def active-action-number (atom 0))
-
-; a map k/v'd with:
-; {beat-event {scene0 {action-event1 scheduled-action1
-;                      action-event2 scheduled-action2}
-;              scene1 {action-event}
-;}
-; TODO: instead of a 3-nested map, how about 2-nested with an array for an outer key?
-;       or maybe 3-nested, but with the outermost being scene? or maybe no change?
-(def scheduled-actions (atom {}))
-
 
 ;
 ; utilities
@@ -268,13 +198,14 @@
         (domap #(draw-grid lpad x % :red :low) off)
         (draw-grid lpad x on :green :high))
 
-      (= bank-state 1) ; grid editor bank
-      (domap #(draw-grid lpad x % :green :low) (range LAUNCHPAD_LENGTH))
+      (= bank-state 1) ; volume bank
+      (do (set-column lpad LAUNCHPAD_LENGTH :off) ; first clear all
+          (set-column lpad LAUNCHPAD_LENGTH :green :low (- LAUNCHPAD_LENGTH @sample-volume-state) LAUNCHPAD_LENGTH))
 
       (= bank-state 2) ; zoom select bank
       (domap #(draw-grid lpad x % :red :low) (range LAUNCHPAD_LENGTH))
 
-      (= bank-state 3) ; unused bank
+      (= bank-state 3) ; grid editor bank
       (domap #(draw-grid lpad x % :orange :low) (range LAUNCHPAD_LENGTH)))))
 
 (defn assert-leds []
@@ -341,22 +272,41 @@
               new-scenes (assoc prev-scenes scene-state new-actions)]
           (assoc prev beat-event new-scenes))))))
 
+
 ;
 ; special button methods
 ;
 
-(defn action-button
+(defn bank-state-button
   [x y pressed?]
-  (do
-    (set-atom! active-action-number y)
-    (assert-bank-leds)
-    (assert-grid-leds)))
+    (if pressed?
+      (do
+        (swap! bank-state (fn [prev] (mod (inc prev) NUM_BANKS)))
+        (assert-bank-state-led)
+        (assert-bank-leds))))
 
 (defn bank-button
   [x y pressed?]
   (let [active-bank (nth @banks @bank-state)
         bank-fn (nth @active-bank y)]
     (bank-fn x y pressed?)))
+
+(defn action-button
+  [x y pressed?]
+  (if pressed?
+    (do
+      (set-atom! active-action-number y)
+      (assert-bank-leds)
+      (assert-grid-leds))))
+
+(defn volume-button
+  [x y pressed?]
+  (if pressed?
+    (do (set-column lpad LAUNCHPAD_LENGTH :off)
+        (set-column lpad LAUNCHPAD_LENGTH :green :high y LAUNCHPAD_LENGTH))
+    (do (set-atom! sample-volume-state (- LAUNCHPAD_LENGTH y))
+        (set-atom! bank-state (- NUM_BANKS 1)) ; want mode 0 next
+        (bank-state-button x y true))))
 
 (defn tracker-state-button
   [x y pressed?]
@@ -385,14 +335,6 @@
       (do
         (swap! repeat-state (fn [prev] (mod (inc prev) 2)))
         (assert-repeat-state-led))))
-
-(defn bank-state-button
-  [x y pressed?]
-    (if pressed?
-      (do
-        (swap! bank-state (fn [prev] (mod (inc prev) NUM_BANKS)))
-        (assert-bank-state-led)
-        (assert-bank-leds))))
 
 
 ;
@@ -511,6 +453,7 @@
 ; set bank buttons
 (domap #(insert-callback bank-button LAUNCHPAD_LENGTH %) (range LAUNCHPAD_LENGTH))
 (set-atom! action-bank (vec (repeat LAUNCHPAD_LENGTH action-button)))
+(set-atom! volume-bank (vec (repeat LAUNCHPAD_LENGTH volume-button)))
 
 ; set grid buttons
 (doall
