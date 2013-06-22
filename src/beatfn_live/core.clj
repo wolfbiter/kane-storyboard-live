@@ -39,6 +39,8 @@
 ; utilities
 ;
 
+(defn get-sample-volume [] (/ @sample-volume-state 8))
+
 (defn get-scene-state-kw [scene] (keyword (str "scene" scene)))
 
 (defn get-action-handle 
@@ -242,6 +244,9 @@
 
 (defn make-event-fn [scheduled-action]
   (let [callback (:callback scheduled-action)
+        sample? (:sample? scheduled-action)
+        ; hack to give samples the volume at the time of their scheduling
+        callback (if sample? (callback (get-sample-volume)) callback)
         repeat? (:repeat? scheduled-action)]
     (if repeat?
       callback
@@ -257,10 +262,10 @@
                             (assoc _scheduled-action :repeat? true)
                             _scheduled-action)
         action-handle (get-action-handle scheduled-action)
-        callback (make-event-fn scheduled-action)]
+        event-fn (make-event-fn scheduled-action)]
 
     ; first schedule the overtone event call
-    (on-event beat-event (make-event-fn scheduled-action) action-handle)
+    (on-event beat-event event-fn action-handle)
 
     ; now store this scheduled action
     (swap! scheduled-actions

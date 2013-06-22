@@ -27,8 +27,7 @@
       (offset-sample sample offset)))))
 
 (defn do-rand-action [actions]
-  (let [vol (/ (+ @sample-volume-state 1) 8)])
-  #((rand-nth actions) % vol))
+  (fn [vol] #((rand-nth actions) % vol)))
 
 
 ;
@@ -38,6 +37,7 @@
 ; 4-beat uplifters
 (def rand-uplift4 {
   :name :rand-uplift4
+  :sample? true
   :callback (do-rand-action [
 
     (make-sample "resources/uplifters/4beat/1.wav" 0.6 100 0.9)
@@ -48,6 +48,7 @@
 ; 8-beat uplifters
 (def rand-uplift8 {
   :name :rand-uplift8
+  :sample? true
   :callback (do-rand-action [
 
     (make-sample "resources/uplifters/8beat/1.wav" 0.5 185 1)
@@ -59,6 +60,7 @@
 ; 16-beat uplifters
 (def rand-uplift16 {
   :name :rand-uplift16
+  :sample? true
   :callback (do-rand-action [
 
     (make-sample "resources/uplifters/16beat/1.wav" 0.3 0 1.548)
@@ -69,6 +71,7 @@
 ; crash downlifters
 (def rand-downlift-crash {
   :name :rand-downlift-crash
+  :sample? true
   :callback (do-rand-action [
 
     (make-sample "resources/downlifters/crash/1.wav" 0.5)
@@ -91,6 +94,7 @@
 ; explode downlifters
 (def rand-downlift-explode {
   :name :rand-downlift-explode
+  :sample? true
   :callback (do-rand-action [
 
     (make-sample "resources/downlifters/explode/1.wav" 0.6)
@@ -111,6 +115,7 @@
 ; fx downlifters
 (def rand-downlift-fx {
   :name :rand-downlift-fx
+  :sample? true
   :callback (do-rand-action [
     
     (make-sample "resources/downlifters/fx/1.wav" 0.3)
