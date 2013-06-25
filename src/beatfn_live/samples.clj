@@ -38,6 +38,7 @@
 (def rand-uplift4 {
   :name :rand-uplift4
   :sample? true
+  :in-advance 4
   :callback (do-rand-action [
 
     (make-sample "resources/uplifters/4beat/1.wav" 0.6 100 0.9)
@@ -49,6 +50,7 @@
 (def rand-uplift8 {
   :name :rand-uplift8
   :sample? true
+  :in-advance 8
   :callback (do-rand-action [
 
     (make-sample "resources/uplifters/8beat/1.wav" 0.5 185 1)
@@ -61,6 +63,7 @@
 (def rand-uplift16 {
   :name :rand-uplift16
   :sample? true
+  :in-advance 16
   :callback (do-rand-action [
 
     (make-sample "resources/uplifters/16beat/1.wav" 0.3 0 1.548)

@@ -249,7 +249,6 @@
             (if (empty? new-actions)
               (dissoc prev beat-event)
               (assoc prev beat-event new-scenes))))))))
-      ;(assert-grid-led x y)))) ; TODO: can this be added?
 
 (defn make-event-fn [scheduled-action]
   (let [callback (:callback scheduled-action)
@@ -264,8 +263,14 @@
 
 ; TODO: debug why repeating scheduled actions sometimes disappear! concurrency issue?
 (defn schedule-action ; scheduled actions are actions scheduled
-  [action beat]       ; for a beat-event 
-  (let [beat-event (get-beat-event beat)
+  [action _beat]       ; for a beat-event 
+  (let [beat
+          ; if this action is to be scheduled in advance, do so
+          (if-let [advance-beats (:in-advance action)]
+            (mod (- _beat advance-beats) LAUNCHPAD_AREA)
+            _beat)
+        [x y] (beat->xy beat)
+        beat-event (get-beat-event beat)
         _scheduled-action  (assoc action :beat-event beat-event :beat beat)
         scheduled-action  (if (= 1 @repeat-state) ; make this repeat if repeat is on
                             (assoc _scheduled-action :repeat? true)
@@ -276,7 +281,7 @@
     ; first schedule the overtone event call
     (on-event beat-event event-fn action-handle)
 
-    ; TODO: test this
+    ; TODO: test this, and is it even necessary...?
     ; then run this aciton's init if it has one
     ;(if (:init scheduled-action)
     ;  ((:init scheduled-action) x y pressed?))
@@ -289,7 +294,10 @@
               prev-actions (scene-state prev-scenes)
               new-actions (assoc prev-actions (:name action) scheduled-action)
               new-scenes (assoc prev-scenes scene-state new-actions)]
-          (assoc prev beat-event new-scenes))))))
+          (assoc prev beat-event new-scenes))))
+
+    ; and finally, assert the LED of this newly scheduled action
+    (assert-grid-led x y)))
 
 
 ;
@@ -394,10 +402,10 @@
   ([] (start-storyboard 0 0))
   ([x y]
     (let [beat (xy->beat x y)]
-      (do (metro-start m beat)
-          (set-atom! tracker-state 2)
-          (assert-tracker-state-led)
-          (run-tracker lpad beat)))))
+      (metro-start m beat)
+      (set-atom! tracker-state 2)
+      (assert-tracker-state-led)
+      (run-tracker lpad beat))))
 
 
 ;
@@ -430,8 +438,8 @@
           ; if there are no active actions scheduled here, schedule them
           (if (empty? matching-actions)
             (domap #(schedule-action % beat) active-actions)
-            (domap unschedule-action matching-actions))
-          (assert-grid-led x y)) ; assert LED regardless
+            (do (domap unschedule-action matching-actions)
+                (assert-grid-led x y))))
 
         ; TODO: make things for other banks!
         :else (println "HI! current bank state:" bank-state))
