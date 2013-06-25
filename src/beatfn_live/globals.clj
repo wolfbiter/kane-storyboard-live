@@ -37,7 +37,7 @@
    :callback (fn [event] (println "null-action called!"))})
 
 ; an endless vector of possible actions TODO: make it so this isn't finite length
-(def active-actions (atom (vec (repeat LAUNCHPAD_LENGTH null-action))))
+(def loaded-actions (atom (vec (repeat LAUNCHPAD_LENGTH null-action))))
 
 (defn make-bank []
   (do (println "Money.")
@@ -60,8 +60,11 @@
 ; the currently loaded bank (which is a vector of functions)
 (def banks (atom [action-bank volume-bank grid-editor-bank zoom-select-bank]))
 
-; number which designates the currently active action.
-(def active-action-number (atom 0))
+; number which tells how many action buttons are currently held down
+(def actions-pressed (atom 0))
+
+; array of numbers which designate the currently active actions
+(def active-action-numbers (atom [0]))
 
 ; a map k/v'd with:
 ; {beat-event {scene0 {action-event1 scheduled-action1

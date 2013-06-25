@@ -43,20 +43,19 @@
 
 (defn get-scene-state-kw [scene] (keyword (str "scene" scene)))
 
-(defn get-action-handle 
+(defn get-action-handle
   [scheduled-action]
     (let [beat-event (:beat-event scheduled-action)
           name (:name scheduled-action)
           scene-state (get-scene-state-kw @scene-state)]
       (keyword (str beat-event "scene" scene-state name))))
 
-(defn set-action
-  [action i]
-  (swap! active-actions (fn [prev] (assoc prev i action))))
+(defn load-action [action i]
+  (swap! loaded-actions (fn [prev] (assoc prev i action))))
 
-(defn get-action
-  ([] (get-action @active-action-number)) ; if no args, return active action
-  ([i] (nth @active-actions i)))
+(defn get-active-actions []
+  (let [active-action-numbers @active-action-numbers]
+   (map #(nth @loaded-actions %) active-action-numbers)))
 
 (defn get-beat-event [beat]
   (keyword (str "beat-event" (mod beat LAUNCHPAD_AREA))))
@@ -164,22 +163,32 @@
   ([x y] (if (= 2 @tracker-state) (draw-grid lpad x y :orange :high))))
 
 (defn assert-grid-led [x y]
-  (let [active-action (get-action)
+  (let [active-actions (get-active-actions)
         scheduled-actions @scheduled-actions
         beat (xy->beat x y)
         beat-event (get-beat-event beat)
         active-scene @scene-state
         scene-state (get-scene-state-kw active-scene)
-        possible-actions (scene-state (beat-event scheduled-actions))
-        matching-action ((:name active-action) possible-actions)]
-    (cond 
-      (empty? possible-actions) (draw-grid lpad x y :off)
-      (not (nil? matching-action)) (draw-grid lpad x y :green :low)
-        :else (draw-grid lpad x y :red :low))))
+        possible-actions (scene-state (beat-event scheduled-actions))]
+
+        ; if no actions are scheduled for this grid spot, turn the led off
+        (if (empty? possible-actions)
+          (draw-grid lpad x y :off)
+
+          ; else check if any currently active actions are scheduled for this spot
+          (let [matching-actions
+                (filter #(not (nil? %))
+                  (map #((:name %) possible-actions) active-actions))]
+
+            ; if there are none, light the led red
+            (if (empty? matching-actions)
+             (draw-grid lpad x y :red :low)
+
+             ; else light the led green
+             (draw-grid lpad x y :green :low))))))
 
 ; TODO: make this be smarter by checking only the squares with scheduled actions
-; TODO: make this know tracker pos so it doesn't wipe the tracker led
-; TODO: maybe make it so the other scene's scheduled events are present?
+; TODO: maybe make it so the other scenes's scheduled events are present?
 ; TODO: should the inactive scheduled actions be red or red and orange?
 (defn assert-grid-leds []
   (do
@@ -195,10 +204,10 @@
     (cond
 
       (= bank-state 0) ; action bank
-      (let [on @active-action-number
-            off (disj (set (range LAUNCHPAD_LENGTH)) on)]
+      (let [on @active-action-numbers
+            off (filter #(= -1 (.indexOf on %)) (range LAUNCHPAD_LENGTH))]
         (domap #(draw-grid lpad x % :red :low) off)
-        (draw-grid lpad x on :green :high))
+        (domap #(draw-grid lpad x % :green :high) on))
 
       (= bank-state 1) ; volume bank
       (do (set-column lpad LAUNCHPAD_LENGTH :off) ; first clear all
@@ -267,6 +276,11 @@
     ; first schedule the overtone event call
     (on-event beat-event event-fn action-handle)
 
+    ; TODO: test this
+    ; then run this aciton's init if it has one
+    ;(if (:init scheduled-action)
+    ;  ((:init scheduled-action) x y pressed?))
+
     ; now store this scheduled action
     (swap! scheduled-actions
       (fn [prev]
@@ -298,11 +312,25 @@
 
 (defn action-button
   [x y pressed?]
+
   (if pressed?
     (do
-      (set-atom! active-action-number y)
-      (assert-bank-leds)
-      (assert-grid-leds))))
+      ; first increment pressed actions and light led
+      (swap! actions-pressed inc)
+      ; then if another action button is pressed, add this action to active actions.
+      (if (> @actions-pressed 1)
+        (swap! active-action-numbers (fn [prev] (conj prev y)))
+        ; else this is the only action press, so set it as active action
+        (set-atom! active-action-numbers [y]))
+      ; now that this action is active, assert its LED
+      (assert-bank-leds))
+
+    (do
+      ; on release, first decrement pressed actions
+      (swap! actions-pressed dec)
+      ; then, if this is the last action being released, assert grid LEDs
+      (if (= @actions-pressed 0)
+        (assert-grid-leds)))))
 
 (defn volume-button
   [x y pressed?]
@@ -393,17 +421,17 @@
         (= bank-state 0) ; action bank
         (let [beat-event (get-beat-event beat)
               scene-state (get-scene-state-kw @scene-state)
-              active-action (get-action)
+              active-actions (get-active-actions)
               possible-actions (scene-state (beat-event @scheduled-actions))
-              matching-action ((:name active-action) possible-actions)]
-          (if (nil? matching-action)
-            (schedule-action active-action beat)
-            (unschedule-action matching-action))
+              matching-actions
+                (filter #(not (nil? %))
+                  (map #((:name %) possible-actions) active-actions))]
 
-          ; TODO: test this
-          (if (:init active-action) ; run this action's init if it has one
-            ((:init active-action) x y pressed?))
-          (assert-grid-led x y))
+          ; if there are no active actions scheduled here, schedule them
+          (if (empty? matching-actions)
+            (domap #(schedule-action % beat) active-actions)
+            (domap unschedule-action matching-actions))
+          (assert-grid-led x y)) ; assert LED regardless
 
         ; TODO: make things for other banks!
         :else (println "HI! current bank state:" bank-state))
@@ -448,12 +476,12 @@
 ;
 
 ; set actions
-(set-action rand-uplift4 0)
-(set-action rand-uplift8 1)
-(set-action rand-uplift16 2)
-(set-action rand-downlift-crash 3)
-(set-action rand-downlift-explode 4)
-(set-action rand-downlift-fx 5)
+(load-action rand-uplift4 0)
+(load-action rand-uplift8 1)
+(load-action rand-uplift16 2)
+(load-action rand-downlift-crash 3)
+(load-action rand-downlift-explode 4)
+(load-action rand-downlift-fx 5)
 
 ; set bank buttons
 (domap #(insert-callback bank-button LAUNCHPAD_LENGTH %) (range LAUNCHPAD_LENGTH))
