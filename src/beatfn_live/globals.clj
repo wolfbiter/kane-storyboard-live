@@ -74,3 +74,6 @@
 ; TODO: instead of a 3-nested map, how about 2-nested with an array for an outer key?
 ;       or maybe 3-nested, but with the outermost being scene? or maybe no change?
 (def scheduled-actions (atom {}))
+
+; a vector of current deck volumes, currently engineered for 4 decks
+(def deck-volumes (atom (vec [1 1 1 1])))

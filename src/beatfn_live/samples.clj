@@ -1,9 +1,12 @@
 (ns beatfn-live.samples
   (:use
     [beatfn-live.globals]
-    [overtone.live :only [load-sample play-buf buffer-id out definst at]]))
+    [beatfn-live.outputs]
+    [overtone.live :only [load-sample play-buf buffer-id out definst at ctl]]))
 
+;
 ; utility methods
+;
 
 (definst play-sample [id 0 vol 1 rate 1]
     (let [dry (play-buf 2 id rate)]
@@ -29,6 +32,27 @@
 (defn do-rand-action [actions]
   (fn [vol] #((rand-nth actions) % vol)))
 
+;
+; define actions
+;
+
+(def toggle-deck1 {
+  :name :toggle-deck1
+  :callback (fn [event]
+    (swap! deck-volumes (fn [prev-vols]
+      (let [old-vol (nth prev-vols 0)
+            new-vol (mod (+ old-vol 1) 2)]
+        (ctl deck-outputs :deck1 new-vol)
+        (assoc prev-vols 0 new-vol)))))})
+
+(def toggle-deck2 {
+  :name :toggle-deck2
+  :callback (fn [event]
+    (swap! deck-volumes (fn [prev-vols]
+      (let [old-vol (nth prev-vols 1)
+            new-vol (mod (+ old-vol 1) 2)]
+        (ctl deck-outputs :deck2 new-vol)
+        (assoc prev-vols 1 new-vol)))))})
 
 ;
 ; define samples

@@ -3,32 +3,9 @@
     [overtone.live]
     [beatfn-live.globals]
     [beatfn-live.samples]
+    [beatfn-live.outputs]
     [beatfn-live.launchpad]
     [overtone.inst.drum :only [quick-kick haziti-clap soft-hat open-hat]]))
-
-
-; --------------- Output Stuff -----------------------
-
-(definst output [amp 1]
-  (* amp (sound-in [0 1])))
-
-;(definst output [vol1 1.0 lpf1 1.0 rq 1.0]
-;  (let [vol-env1 (env-gen (adsr) :gate vol1 :action NO-ACTION)
-;        lpf-env1 (env-gen (adsr) :gate lpf1 :action NO-ACTION)]
-;        (rlpf (* vol-env1 (sound-in [0 1]))
-;              lpf-env1
-;              rq)))
-
-(def master-volume (output))
-
-; (ctl master-volume :vol1 1.0)
-;(def master-volume (output))
-
-; (ctl lowpass :cutoff 10000 :res 1)
-(def lowpass (inst-fx! output fx-rlpf))
-
-; (ctl highpass :cutoff 10000 :res 1)
-(def highpass (inst-fx! output fx-rhpf))
 
 
 ; --------------- Storyboard Stuff --------------------
@@ -483,13 +460,15 @@
 ; startup stuff
 ;
 
-; set actions
+; load actions
 (load-action rand-uplift4 0)
 (load-action rand-uplift8 1)
 (load-action rand-uplift16 2)
 (load-action rand-downlift-crash 3)
 (load-action rand-downlift-explode 4)
 (load-action rand-downlift-fx 5)
+(load-action toggle-deck1 6)
+(load-action toggle-deck2 7)
 
 ; set bank buttons
 (domap #(insert-callback bank-button LAUNCHPAD_LENGTH %) (range LAUNCHPAD_LENGTH))
