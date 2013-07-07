@@ -6,6 +6,7 @@
 (def m (metronome BPM))
 (def NUM_SCENES 2) ; max of 4, check out assert-scene-state-led if this changes
 (def NUM_BANKS 4) ; number of possible banks
+(def MIN_STEP (/ 1 4)) ; minimum possible step size
 (def LAUNCHPAD_LENGTH 8)
 (def LAUNCHPAD_AREA (* LAUNCHPAD_LENGTH LAUNCHPAD_LENGTH))
 (def scene-state (atom 0)) ; the number of the currently active scene
@@ -13,8 +14,9 @@
                           ; 1 for grid editor bank
                           ; 2 for zoom select bank
                           ; 3 unused atm
+(def zoom-state (atom 1)) ; start off with zoom scale of 1
 
-(def sample-volume-state (atom 3)) ; last pressed volume, starts at 4/8
+(def sample-volume-state (atom 4)) ; last pressed volume, starts at 4/8
 (def repeat-state (atom 0)) ; 0 for repeat off, 1 for repeat on
 (def tracker-state (atom 1)) ; 0: paused with LED off
                              ; 1: ready with LED orange

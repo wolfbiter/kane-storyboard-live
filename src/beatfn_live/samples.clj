@@ -10,7 +10,7 @@
 
 (definst play-sample [id 0 vol 1 rate 1]
     (let [dry (play-buf 2 id rate)]
-      (out [0 1] (* dry vol))))
+      (out 0 (* dry vol))))
 
 ; TODO: bundle this into the play-buf function, check odoc
 (defn offset-sample [sample offset] ; offset is in units of milliseconds

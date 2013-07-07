@@ -5,8 +5,8 @@
 ; --------------- Output Stuff -----------------------
 
 (defsynth output [deck1 1 deck2 1]
-  (out [2 3] (* deck1 (sound-in [2 3])))
-  (out [4 5] (* deck2 (sound-in [4 5]))))
+  (out 2 (* deck1 (sound-in [2 3])))
+  (out 4 (* deck2 (sound-in [4 5]))))
 
 ;(definst output [vol1 1.0 lpf1 1.0 rq 1.0]
 ;  (let [vol-env1 (env-gen (adsr) :gate vol1 :action NO-ACTION)
