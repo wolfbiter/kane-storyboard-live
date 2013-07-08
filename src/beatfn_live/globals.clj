@@ -22,6 +22,8 @@
                              ; 1: ready with LED orange
                              ; 2: playing with LED green
 
+(def tracker-pos (atom [0 0])) ; current tracker position
+
 ; TODO: scrolling through active actions (implementation: scrollthrough active bank?)
 ; TODO: add zoom-select bank
 ; TODO: move scene-select to arrows
@@ -79,3 +81,15 @@
 
 ; a vector of current deck volumes, currently engineered for 4 decks
 (def deck-volumes (atom (vec [1 1 1 1])))
+
+;
+; non-grid buttons
+;
+
+; TODO: turn special buttons into maps of location and callback
+(def zoom-state-up-loc {:x 0 :y 8})
+(def zoom-state-down-loc {:x 1 :y 8})
+(def tracker-state-loc {:x 4 :y 8})
+(def repeat-state-loc {:x 5 :y 8})
+(def scene-state-loc {:x 6 :y 8})
+(def bank-state-loc {:x 7 :y 8})

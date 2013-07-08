@@ -1,5 +1,6 @@
 (ns beatfn-live.outputs
   (:use
+    [beatfn-live.launchpad :only [open]]
     [overtone.live :only [defsynth sound-in out inst-fx! fx-rlpf fx-rhpf]]))
 
 ; --------------- Output Stuff -----------------------
@@ -18,8 +19,12 @@
 ; (ctl deck-outputs :deck1 1.0)
 (def deck-outputs (output))
 
+
 ;; (ctl lowpass :cutoff 10000 :res 1)
 ;(def lowpass (inst-fx! deck-outputs fx-rlpf))
 ;
 ;; (ctl highpass :cutoff 10000 :res 1)
 ;(def highpass (inst-fx! deck-outputs fx-rhpf))
+
+
+(def lpad (open))

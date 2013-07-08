@@ -4,236 +4,13 @@
     [beatfn-live.globals]
     [beatfn-live.samples]
     [beatfn-live.outputs]
-    [beatfn-live.launchpad]
+    [beatfn-live.ledAssertions]
+    [beatfn-live.launchpad :only [open draw-grid on-grid-pressed]]
+    [beatfn-live.utilities]
     [overtone.inst.drum :only [quick-kick haziti-clap soft-hat open-hat]]))
 
 
 ; --------------- Storyboard Stuff --------------------
-
-(def lpad (open))
-
-;
-; utilities
-;
-
-(defn get-sample-volume [] (/ @sample-volume-state 8))
-
-(defn get-scene-state-kw [scene] (keyword (str "scene" scene)))
-
-(defn get-current-zoom-length [] (/ @zoom-state LAUNCHPAD_LENGTH))
-
-(defn get-action-handle
-  [scheduled-action]
-    (let [beat-event (:beat-event scheduled-action)
-          name (:name scheduled-action)
-          scene-state (get-scene-state-kw @scene-state)]
-      (keyword (str beat-event "scene" scene-state name))))
-
-(defn load-action [action i]
-  (swap! loaded-actions (fn [prev] (assoc prev i action))))
-
-(defn get-active-actions []
-  (let [active-action-numbers @active-action-numbers]
-   (map #(nth @loaded-actions %) active-action-numbers)))
-
-(defn domap [& args]
-  (doall (apply map args)))
-
-; NOTE: LAUNCHPAD_AREA here determines the max looped beats, currently 64
-; NOTE: min looped beats is determined by run-tracker
-(defn mod-beat-max [beat]
-  (mod beat LAUNCHPAD_AREA))
-
-(defn mod-beat-zoom [beat]
-  (mod beat (* LAUNCHPAD_AREA @zoom-state)))
-
-(defn get-beat-event [raw-beat]
-  (keyword (str "beat-event" (mod-beat-max raw-beat))))
-
-; TODO: make it so things scheduled when zoomed to 16beats loop over 64beats
-(defn get-tracker-pos []
-  (let [raw-beat (m)]
-    (beat->xy (mod-beat-zoom raw-beat))))
-
-(defn xy->beat [x y]
-  (let [beat (+ (* y LAUNCHPAD_LENGTH) x)]
-    beat)) ; TODO: fix this
-
-(defn beat->xy [raw-beat]
-  (let [beat (mod-beat-zoom raw-beat)
-        x (mod beat LAUNCHPAD_LENGTH)
-        y (/ (- beat x) LAUNCHPAD_LENGTH)]
-    [x y]))
-
-(defn set-atom!
-  [atom val]
-  (swap! atom (fn [x] val)))
-
-; TODO: make a function from the following 3 that allows filling in tl->br given 2 spots
-
-(defn set-line
-  [lpad orientation line color intensity start end]
-  (cond
-    (= orientation "row")
-    (domap #(draw-grid lpad % line color intensity) (range start end))
-    (= orientation "column")
-    (domap #(draw-grid lpad line % color intensity) (range start end))
-    :else (println "ERROR: Unknown set-line orientation " orientation)))
-
-(defn set-row
-  "Sets the row of given lpad to given color, intensity defaults to :low."
-  ([lpad row color]
-    (set-row lpad row color :low))
-  ([lpad row color intensity]
-    (set-row lpad row color intensity 0 LAUNCHPAD_LENGTH))
-  ([lpad row color start end]
-    (set-row lpad row color :low start end))
-  ([lpad row color intensity start end]
-    (set-line lpad "row" row color intensity start end)))
-
-(defn set-column
-  "Sets the column of given lpad to given color, intensity defaults to :low."
-  ([lpad column color]
-    (set-column lpad column color :low))
-  ([lpad column color intensity]
-    (set-column lpad column color intensity 0 LAUNCHPAD_LENGTH))
-  ([lpad column color start end]
-    (set-column lpad column color :low start end))
-  ([lpad column color intensity start end]
-    (set-line lpad "column" column color intensity start end)))
-
-
-;
-; non-grid buttons
-;
-
-; TODO: turn special buttons into maps of location and callback
-(def zoom-state-up-loc {:x 0 :y 8})
-(def zoom-state-down-loc {:x 1 :y 8})
-(def tracker-state-loc {:x 4 :y 8})
-(def repeat-state-loc {:x 5 :y 8})
-(def scene-state-loc {:x 6 :y 8})
-(def bank-state-loc {:x 7 :y 8})
-
-
-;
-; led assertions
-;
-
-(defn assert-tracker-state-led []
-  (let [x (:x tracker-state-loc)
-        y (:y tracker-state-loc)]
-    (cond
-      (= 0 @tracker-state) (draw-grid lpad x y :off)
-      (= 1 @tracker-state) (draw-grid lpad x y :orange :low)
-      (= 2 @tracker-state) (draw-grid lpad x y :green :low))))
-
-(defn assert-scene-state-led []
-  (let [x (:x scene-state-loc)
-        y (:y scene-state-loc)]
-    (cond
-      (= 0 @scene-state) (draw-grid lpad x y :red :low)
-      (= 1 @scene-state) (draw-grid lpad x y :orange :low))))
-
-(defn assert-bank-state-led []
-  (let [x (:x bank-state-loc)
-        y (:y bank-state-loc)]
-    (cond
-      (= 0 @bank-state) (draw-grid lpad x y :off)
-      (= 1 @bank-state) (draw-grid lpad x y :green :low)
-      (= 2 @bank-state) (draw-grid lpad x y :red :low)
-      (= 3 @bank-state) (draw-grid lpad x y :orange :low))))
-
-(defn assert-repeat-state-led []
-  (let [x (:x repeat-state-loc)
-        y (:y repeat-state-loc)]
-    (cond
-      (= 0 @repeat-state) (draw-grid lpad x y :off)
-      (= 1 @repeat-state) (draw-grid lpad x y :green :low))))
-
-(defn assert-zoom-state-leds []
-  (let [x1 (:x zoom-state-up-loc)
-        y1 (:y zoom-state-up-loc)
-        x2 (:x zoom-state-down-loc)
-        y2 (:y zoom-state-down-loc)]
-      (draw-grid lpad x1 y1 :green :low)
-      (draw-grid lpad x2 y2 :red :low)))
-
-(defn assert-tracker-led
-  ([] (apply assert-tracker-led (get-tracker-pos)))
-  ([x y]
-    (let [[prevx prevy] (beat->xy (- (xy->beat x y) 1))]
-      (assert-grid-led prevx prevy)
-      (if (= 2 @tracker-state)
-        (draw-grid lpad x y :orange :high)
-        (draw-grid lpad x y :off)))))
-
-(defn assert-grid-led [x y]
-  (let [active-actions (get-active-actions)
-        scheduled-actions @scheduled-actions
-        beat (xy->beat x y)
-        beat-event (get-beat-event beat)
-        active-scene @scene-state
-        scene-state (get-scene-state-kw active-scene)
-        possible-actions (scene-state (beat-event scheduled-actions))]
-
-        ; if no actions are scheduled for this grid spot, turn the led off
-        (if (empty? possible-actions)
-          (draw-grid lpad x y :off)
-
-          ; else check if any currently active actions are scheduled for this spot
-          (let [matching-actions
-                (filter #(not (nil? %))
-                  (map #((:name %) possible-actions) active-actions))]
-
-            ; if there are none, light the led red
-            (if (empty? matching-actions)
-             (draw-grid lpad x y :red :low)
-
-             ; else light the led green
-             (draw-grid lpad x y :green :low))))))
-
-; TODO: make this be smarter by checking only the squares with scheduled actions
-; TODO: maybe make it so the other scenes's scheduled events are present?
-; TODO: should the inactive scheduled actions be red or red and orange?
-(defn assert-grid-leds []
-  (do
-    (doall
-      (for [x (range LAUNCHPAD_LENGTH)
-            y (range LAUNCHPAD_LENGTH)]
-        (assert-grid-led x y)))
-    (assert-tracker-led)))
-
-(defn assert-bank-leds []
-  (let [x LAUNCHPAD_LENGTH
-        bank-state @bank-state]
-    (cond
-
-      (= bank-state 0) ; action bank
-      (let [on @active-action-numbers
-            off (filter #(= -1 (.indexOf on %)) (range LAUNCHPAD_LENGTH))]
-        (domap #(draw-grid lpad x % :red :low) off)
-        (domap #(draw-grid lpad x % :green :high) on))
-
-      (= bank-state 1) ; volume bank
-      (do (set-column lpad LAUNCHPAD_LENGTH :off) ; first clear all
-          (set-column lpad LAUNCHPAD_LENGTH :green :low (- LAUNCHPAD_LENGTH @sample-volume-state) LAUNCHPAD_LENGTH))
-
-      (= bank-state 2) ; zoom select bank
-      (domap #(draw-grid lpad x % :red :low) (range LAUNCHPAD_LENGTH))
-
-      (= bank-state 3) ; grid editor bank
-      (domap #(draw-grid lpad x % :orange :low) (range LAUNCHPAD_LENGTH)))))
-
-(defn assert-leds []
-  (assert-tracker-state-led)
-  (assert-zoom-state-leds)
-  (assert-bank-state-led)
-  (assert-scene-state-led)
-  (assert-repeat-state-led)
-  (assert-bank-leds)
-  (assert-grid-leds))
-
 
 ;
 ; actions
@@ -308,6 +85,77 @@
 
 
 ;
+; core functionality
+;
+
+(defn run-tracker
+  [lpad raw-beat]
+  (let [next-raw-beat (+ raw-beat MIN_STEP)
+       storyboard-on? (= @tracker-state 2)]
+
+    ; TODO: move this if check elsewhere so it's not a bottleneck
+    (if storyboard-on?
+      (apply-by (m next-raw-beat) #'run-tracker [lpad next-raw-beat]))
+
+    (apply assert-tracker-led (beat->xy raw-beat))
+    (event (get-beat-event raw-beat))))
+
+;    ; TODO: make this work correctly for things of less than a beat per button.
+;    ; IDEA: https://github.com/overtone/overtone/blob/master/src/overtone/examples/timing/internal_metro.clj#L37
+;    (domap
+;      #(let [beat (+ raw-beat %)]
+;        (apply-at (m beat) #'assert-tracker-led)
+;        (at (m beat)
+;          ;(quick-kick :amp 0.5)
+;          ;(tracker-test :beat beat)))
+;          ;(event :assert-tracker-led)
+;          (event (get-beat-event beat)))) ; trigger any scheduled actions
+;      (range 0 1 MIN_STEP))))
+
+;(defsynth tracker-test [beat 0]
+;  (event (get-beat-event beat))
+;  (assert-tracker-led (beat->xy beat)))
+;
+;(defsynth step-tracker-synth [c-bus 0 rate 2 reset 0]
+;  (let [trigger (impulse:kr rate)
+;        count (stepper:kr trigger :min 0 :max 1 :reset reset)]
+;    (send-trig:kr trigger count)
+;    (out:kr c-bus trigger)))
+;
+;(on-sync-event
+;  "/tr"
+;  (fn [event]
+;    (let [whole-beat (m)
+;          beat-fraction (/ (nth (:args event) 1) 4)
+;          beat (+ whole-beat beat-fraction)
+;          [x y] (beat->xy beat)]
+;          ;storyboard-on? (= @tracker-state 2)]
+;      ;(if storyboard-on?
+;        ;(do
+;          (event (get-beat-event beat))
+;
+;          (draw-grid lpad x y :orange :high)
+;          ;(draw-grid lpad (- x 1) (- y 1) :orange :high)
+;          ;(assert-tracker-led (beat->xy beat))))
+;          (println "beat: " whole-beat " fraction: " beat-fraction)))
+;  ::tracker)
+;
+;(def step-tracker (step-tracker-synth))
+
+; TODO: debug why the start is 1 beat off and feels wrong
+(defn start-storyboard
+  ([] (start-storyboard 0 0))
+  ([x y]
+    (let [beat (xy->beat x y)]
+      ;(ctl step-tracker :reset 0)
+      (metro-start m (- beat 1))
+      ;(at (m (+ (m) 1)) (ctl step-tracker :reset 1))
+      (set-atom! tracker-state 2)
+      (assert-tracker-state-led)
+      (run-tracker lpad beat))))
+
+
+;
 ; special button methods
 ;
 
@@ -315,18 +163,18 @@
 (defn zoom-state-button-up
   [x y pressed?]
     (if pressed?
-      (let [scalar 2]
+      (let [scalar 0.5]
         (swap! zoom-state (partial * scalar))
-        (draw-grid lpad x y :orange :low)
+        (draw-grid lpad x y :green :high)
         (assert-grid-leds)))
     (assert-zoom-state-leds))
 
 (defn zoom-state-button-down
   [x y pressed?]
     (if pressed?
-      (let [scalar 0.5]
+      (let [scalar 2]
         (swap! zoom-state (partial * scalar))
-        (draw-grid lpad x y :orange :low)
+        (draw-grid lpad x y :red :high)
         (assert-grid-leds)))
     (assert-zoom-state-leds))
 
@@ -387,9 +235,9 @@
         (= 1 @tracker-state)
           (set-atom! tracker-state 0)
         (= 2 @tracker-state)
-            (set-atom! tracker-state 1))
-      (assert-tracker-state-led)
-      (assert-tracker-led))))
+          (set-atom! tracker-state 1))
+      (assert-tracker-led x y)
+      (assert-tracker-state-led))))
 
 (defn scene-state-button
   [x y pressed?]
@@ -444,39 +292,8 @@
 
 
 ;
-; core functionality
-;
-
-(defn run-tracker
-  [lpad raw-beat]
-  (let [next-raw-beat (+ raw-beat MIN_STEP)
-       storyboard-on? (= @tracker-state 2)]
-
-    ; TODO: move this if check elsewhere so it's not a bottleneck
-    (if storyboard-on?
-      (apply-by (m next-raw-beat) #'run-tracker [lpad next-raw-beat]))
-
-    (at (m raw-beat)
-      ;(quick-kick :amp 0.5)
-      (event (get-beat-event raw-beat)) ; trigger any scheduled actions
-      (assert-tracker-led))))
-
-; TODO: debug why the start is 1 beat off and feels wrong
-(defn start-storyboard
-  ([] (start-storyboard 0 0))
-  ([x y]
-    (let [beat (xy->beat x y)]
-      (metro-start m (- beat 1))
-      (set-atom! tracker-state 2)
-      (assert-tracker-state-led)
-      (assert-tracker-led)
-      (run-tracker lpad beat))))
-
-
-;
 ; callback stuff
 ;
-
 
 (def callbacks
   (let [length (+ LAUNCHPAD_AREA 1)
