@@ -256,12 +256,13 @@
 
 (defn grid-button
   [x y pressed?]
-  (let [beat (xy->beat x y)
-        tracker-ready? (= 1 @tracker-state)
-        bank-state @bank-state]
-    (if pressed?
+  (if pressed?
 
-      ; if button is pressed,
+    ; if button is pressed,
+    (let [beat (xy->beat x y)
+          tracker-ready? (= 1 @tracker-state)
+          bank-state @bank-state]
+
       (cond
         ; and tracker is ready,
         tracker-ready?
@@ -284,11 +285,11 @@
                 (assert-grid-led x y))))
 
         ; TODO: make things for other banks!
-        :else (println "HI! current bank state:" bank-state))
+        :else (println "HI! current bank state:" bank-state)))
 
-      ; when button is released
-      (cond
-        tracker-ready? (start-storyboard x y)))))
+    ; when button is released
+    (cond
+      tracker-ready? (start-storyboard x y))))
 
 
 ;

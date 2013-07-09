@@ -14,15 +14,13 @@
                           ; 1 for grid editor bank
                           ; 2 for zoom select bank
                           ; 3 unused atm
-(def zoom-state (atom 1)) ; start off with zoom scale of 1
+(def zoom-state (atom 1.0)) ; start off with zoom scale of 1
 
 (def sample-volume-state (atom 4)) ; last pressed volume, starts at 4/8
 (def repeat-state (atom 0)) ; 0 for repeat off, 1 for repeat on
 (def tracker-state (atom 1)) ; 0: paused with LED off
                              ; 1: ready with LED orange
                              ; 2: playing with LED green
-
-(def tracker-pos (atom [0 0])) ; current tracker position
 
 ; TODO: scrolling through active actions (implementation: scrollthrough active bank?)
 ; TODO: add zoom-select bank
