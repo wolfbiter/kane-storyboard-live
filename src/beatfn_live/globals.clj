@@ -7,6 +7,7 @@
 (def NUM_ACTION_STATES 4) ; currently handles 4 preset action banks
 (def NUM_BANKS 4) ; number of possible banks
 (def MIN_STEP (/ 1 4)) ; minimum possible step size
+(def MAX_ZOOM 1.0) ; be wary of schedule-action when changing this!
 (def LAUNCHPAD_LENGTH 8)
 (def LAUNCHPAD_AREA (* LAUNCHPAD_LENGTH LAUNCHPAD_LENGTH))
 (def scene-state (atom 0)) ; the number of the currently active scene

@@ -15,7 +15,7 @@
 
 ; TODO: make unscheduling all actions not so dumb!
 (defn unschedule-action
-  ([] (domap unschedule-action @scheduled-actions)) 
+  ([] (domap unschedule-action @scheduled-actions))
   ([scheduled-action]
     (let [action-handle (get-action-handle scheduled-action)
           beat-event (:beat-event scheduled-action)]
@@ -42,40 +42,48 @@
       #(do (callback %)
            (unschedule-action scheduled-action)))))
 
-; TODO: debug why repeating scheduled actions sometimes disappear! concurrency issue?
-(defn schedule-action ; scheduled actions are actions scheduled
-  [action _beat]       ; for a beat-event 
-  (let [beat
-          ; if this action is to be scheduled in advance, do so
-          (if-let [advance-beats (:in-advance action)]
-            (mod (- _beat advance-beats) LAUNCHPAD_AREA)
-            _beat)
-        [x y] (beat->xy beat)
-        beat-event (get-beat-event beat)
-        _scheduled-action  (assoc action :beat-event beat-event :beat beat :scene-state @scene-state)
-        scheduled-action  (if (= 1 @repeat-state) ; make this repeat if repeat is on
-                            (assoc _scheduled-action :repeat? true)
-                            _scheduled-action)
-        action-handle (get-action-handle scheduled-action)
-        event-fn (make-event-fn scheduled-action)]
+(defn schedule-action
+  ([action _beat] (schedule-action action _beat false))
+  ([action _beat checked-loop?]
 
-    ; first schedule the overtone event call
-    (on-event beat-event event-fn action-handle)
+    ; first, make sure this action loops properly based on current zoom
+    (if (and (not checked-loop?) (< @zoom-state MAX_ZOOM))
+      (let [step (/ @zoom-state MAX_ZOOM)]
+        (println "step: " step)
+        (domap #(schedule-action action (+ _beat (* LAUNCHPAD_AREA %)) true) (range step MAX_ZOOM step))))
 
-    ; TODO: test this, and is it even necessary...?
-    ; then run this aciton's init if it has one
-    ;(if (:init scheduled-action)
-    ;  ((:init scheduled-action) x y pressed?))
+    ; now schedule the action
+    (let [beat
+            ; if this action is to be scheduled in advance, do so
+            (if-let [advance-beats (:in-advance action)]
+              (mod (- _beat advance-beats) LAUNCHPAD_AREA)
+              _beat)
+          [x y] (beat->xy beat)
+          beat-event (get-beat-event beat)
+          _scheduled-action  (assoc action :beat-event beat-event :beat beat :scene-state @scene-state)
+          scheduled-action  (if (= 1 @repeat-state) ; make this repeat if repeat is on
+                              (assoc _scheduled-action :repeat? true)
+                              _scheduled-action)
+          action-handle (get-action-handle scheduled-action)
+          event-fn (make-event-fn scheduled-action)]
 
-    ; now store this scheduled action
-    (swap! scheduled-actions
-      (fn [prev]
-        (let [scene-state (get-scene-state-kw @scene-state)
-              prev-scenes (beat-event prev)
-              prev-actions (scene-state prev-scenes)
-              new-actions (assoc prev-actions (:name action) scheduled-action)
-              new-scenes (assoc prev-scenes scene-state new-actions)]
-          (assoc prev beat-event new-scenes))))
+      ; first schedule the overtone event call
+      (on-event beat-event event-fn action-handle)
 
-    ; and finally, assert the LED of this newly scheduled action
-    (assert-grid-led x y)))
+      ; TODO: test this, and is it even necessary...?
+      ; then run this aciton's init if it has one
+      ;(if (:init scheduled-action)
+      ;  ((:init scheduled-action) x y pressed?))
+
+      ; now store this scheduled action
+      (swap! scheduled-actions
+        (fn [prev]
+          (let [scene-state (get-scene-state-kw @scene-state)
+                prev-scenes (beat-event prev)
+                prev-actions (scene-state prev-scenes)
+                new-actions (assoc prev-actions (:name action) scheduled-action)
+                new-scenes (assoc prev-scenes scene-state new-actions)]
+            (assoc prev beat-event new-scenes))))
+
+      ; and finally, assert the LED of this newly scheduled action
+      (assert-grid-led x y))))

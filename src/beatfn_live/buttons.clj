@@ -19,7 +19,7 @@
   [x y pressed?]
     (if pressed?
       (let [scalar 0.5]
-        (swap! zoom-state (partial * scalar))
+        (swap! zoom-state #(clamp (* scalar %) MIN_STEP MAX_ZOOM))
         (draw-grid lpad x y :green :high)
         (assert-grid-leds))
     (assert-zoom-state-leds)))
@@ -28,7 +28,7 @@
   [x y pressed?]
     (if pressed?
       (let [scalar 2]
-        (swap! zoom-state (partial * scalar))
+        (swap! zoom-state #(clamp (* scalar %) MIN_STEP MAX_ZOOM))
         (draw-grid lpad x y :red :high)
         (assert-grid-leds))
     (assert-zoom-state-leds)))
@@ -154,6 +154,8 @@
           ; if there are no active actions scheduled here, schedule them
           (if (empty? matching-actions)
             (domap #(schedule-action % beat) active-actions)
+            
+            ; if there are active actions, unschedule them
             (do (domap unschedule-action matching-actions)
                 (assert-grid-led x y))))
 

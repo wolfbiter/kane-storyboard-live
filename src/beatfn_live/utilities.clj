@@ -7,18 +7,21 @@
 ; utilities
 ;
 
-(defn get-sample-volume [] (/ @sample-volume-state 8))
+(defn get-sample-volume [] (/ @sample-volume-state LAUNCHPAD_LENGTH))
 
 (defn get-scene-state-kw [scene] (keyword (str "scene" scene)))
 
-(defn get-current-zoom-length [] (/ @zoom-state LAUNCHPAD_LENGTH))
+(defn clamp [n min max]
+  (cond
+    (> n max) max
+    (< n min) min
+    :else n))
 
 (defn domap [& args]
   (doall (apply map args)))
 
-; NOTE: LAUNCHPAD_AREA here determines the max looped beats, currently 64
 (defn mod-beat-max [beat]
-  (mod beat LAUNCHPAD_AREA))
+  (mod beat (* MAX_ZOOM LAUNCHPAD_AREA)))
 
 (defn mod-beat-zoom [beat]
   (mod beat (* LAUNCHPAD_AREA @zoom-state)))
@@ -57,7 +60,6 @@
   (let [raw-beat (m)]
     (beat->xy (mod-beat-zoom raw-beat))))
 
-; TODO: make it so things scheduled when zoomed to 16beats loop over 64beats
 (defn prev-grid-pos [x y]
   (let [x1 (mod (dec x) LAUNCHPAD_LENGTH)
         y1 (if (zero? x) (mod (dec y) LAUNCHPAD_LENGTH) y)]
