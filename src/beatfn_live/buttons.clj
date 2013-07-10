@@ -6,6 +6,7 @@
     [beatfn-live.samples]
     [beatfn-live.outputs]
     [beatfn-live.actions]
+    [beatfn-live.actionDB]
     [beatfn-live.ledAssertions]
     [beatfn-live.launchpad :only [draw-grid]]
     [beatfn-live.utilities]))
@@ -69,6 +70,8 @@
       (if (= @actions-pressed 0)
         (assert-grid-leds)))))
 
+
+
 (defn volume-button
   [x y pressed?]
   (if pressed?
@@ -76,9 +79,11 @@
         (set-column lpad LAUNCHPAD_LENGTH :green :high y LAUNCHPAD_LENGTH))
     (do (set-atom! sample-volume-state (- LAUNCHPAD_LENGTH y))
         (set-atom! bank-state (- NUM_BANKS 1)) ; want mode 0 next
-        ; TODO: debug why this happens immediately
-        (at (+ (now) 1000) 
-          (bank-state-button x y true)))))
+        ; wait a bit to change modes, so that user can see LED flash
+        (apply-by
+          (+ (now) 425)
+          #'bank-state-button
+          [x y true]))))
 
 (defn tracker-state-button
   [x y pressed?]
@@ -138,26 +143,25 @@
 
       (cond
         ; and tracker is ready,
-        (= 1 @tracker-state)
+        (== 1 @tracker-state)
         (draw-grid lpad x y :green :high) ; light the pressed button green
 
         ; else, do something based on current bank
-        (= bank-state 0) ; action bank
-        (let [beat-event (get-beat-event beat)
-              scene-state (get-scene-state-kw @scene-state)
-              active-actions (get-active-actions)
-              possible-actions (scene-state (beat-event @scheduled-actions))
-              matching-actions
-                (filter #(not (nil? %))
-                  (map #((:name %) possible-actions) active-actions))]
+        (== bank-state 0) ; action bank
+        (let [[possible-actions matching-actions] (get-matching-actions @scene-state beat)]
 
-          ; if there are no active actions scheduled here, schedule them
-          (if (empty? matching-actions)
-            (domap #(schedule-action % beat) active-actions)
-            
-            ; if there are active actions, unschedule them
-            (do (domap unschedule-action matching-actions)
-                (assert-grid-led x y))))
+          ; if grid clear is on, simply clear this square
+          ; TODO: fix this
+          (if (== 2 @repeat-state)
+            (domap unschedule-action possible-actions)
+
+            ; if there are no active actions scheduled here, schedule them
+            (if (empty? matching-actions)  
+              (domap #(schedule-action % beat) (get-active-actions))
+              
+              ; if there are active actions, unschedule them
+              (do (domap unschedule-action matching-actions)
+                  (assert-grid-led x y)))))
 
         ; TODO: make things for other banks!
         :else (println "HI! current bank state:" bank-state)))

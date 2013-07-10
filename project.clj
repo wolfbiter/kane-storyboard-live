@@ -5,6 +5,7 @@
                  ;[overtone/device.grid "0.0.5"]
                  ;[org.clojars.kane/device.launchpad "0.0.5-SNAPSHOT"]
                  [clj-launchpad "0.1.0"]
+                 [com.novemberain/monger "1.4.0"]
                  ;[polynome "0.2.2"]
                  [org.clojure/clojure "1.4.0"]]
   ;:main beatfn-live.core

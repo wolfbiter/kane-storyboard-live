@@ -6,6 +6,7 @@
     [beatfn-live.actions]
     [beatfn-live.samples]
     [beatfn-live.outputs]
+    [beatfn-live.actionDB]
     [beatfn-live.ledAssertions]
     [beatfn-live.launchpad :only [draw-grid on-grid-pressed]]
     [beatfn-live.utilities]

@@ -24,19 +24,15 @@
                              ; 2: playing with LED green
 
 ; TODO: scrolling through active actions (implementation: scrollthrough active bank?)
-; TODO: add zoom-select bank
-; TODO: move scene-select to arrows
 ; TODO: looping. make it so that you can select an area over which to loop
 ; TODO: copy/paste regions. selection goes from top-left to bottom-right.
 ; TODO: to make scenes really awesome, they each need a crossfader "prop"!
 ; TODO: figure out underlying clojure-launchpad stuff to get yellow/more intensities
-; TODO: need a way to specify volume of samples you are placing
-; TODO: need some way to preview stuff (headphones)
 
 (defn null-callback [x y pressed?] nil)
 
 (def null-action
-  {:name :null
+  {:name "null"
    :callback (fn [event] (println "null-action called!"))})
 
 ; an endless vector of possible actions TODO: make it so this isn't finite length

@@ -1,6 +1,7 @@
 (ns beatfn-live.utilities
   (:use
     [beatfn-live.globals]
+    [beatfn-live.actionDB]
     [beatfn-live.launchpad :only [draw-grid]]))
 
 ;
@@ -8,8 +9,6 @@
 ;
 
 (defn get-sample-volume [] (/ @sample-volume-state LAUNCHPAD_LENGTH))
-
-(defn get-scene-state-kw [scene] (keyword (str "scene" scene)))
 
 (defn clamp [n min max]
   (cond
@@ -27,23 +26,39 @@
   (mod beat (* LAUNCHPAD_AREA @zoom-state)))
 
 (defn get-beat-event [raw-beat]
-  (keyword (str "beat-event" (mod-beat-max raw-beat))))
+  (str "beat-event" (mod-beat-max raw-beat)))
 
 (defn get-action-handle
   [scheduled-action]
     (let [beat-event (:beat-event scheduled-action)
           name (:name scheduled-action)
-          scene-state (get-scene-state-kw @scene-state)]
-      (keyword (str beat-event "scene" scene-state name))))
+          scene-state @scene-state]
+      (keyword (str beat-event "_scene" scene-state "_" name))))
 
 (defn load-action [action i]
-  (swap! loaded-actions (fn [prev] (assoc prev i action))))
+  (swap! loaded-actions (fn [prev] (assoc prev i (assoc action :bank-pos i)))))
 
 (defn get-active-actions []
-  (let [active-action-numbers @active-action-numbers]
-   (map
+  (map
     #(nth @loaded-actions (+ (* LAUNCHPAD_LENGTH @action-state) %))
-    active-action-numbers)))
+    @active-action-numbers))
+
+(defn get-matching-actions [scene-state beat]
+  (let [active-actions (get-active-actions)
+        possible-actions (find-actions {
+          :scene-state scene-state
+          :beat-event (get-beat-event beat)
+        })
+        matching-actions (filter #(not (nil? %))
+          (for [possible-action possible-actions
+                active-action active-actions]
+
+            ; only return matching actions
+            (if (= (:name active-action) (:name possible-action))
+              possible-action)))]
+
+    ;(println "matching actions: " matching-actions)
+    [possible-actions matching-actions]))
 
 (defn xy->beat [x y]
   (let [beat (+ (* y LAUNCHPAD_LENGTH) x)]
@@ -54,11 +69,6 @@
         x (mod beat LAUNCHPAD_LENGTH)
         y (/ (- beat x) LAUNCHPAD_LENGTH)]
     [x y]))
-
-(defn get-tracker-pos []
-  ;@tracker-pos)
-  (let [raw-beat (m)]
-    (beat->xy (mod-beat-zoom raw-beat))))
 
 (defn prev-grid-pos [x y]
   (let [x1 (mod (dec x) LAUNCHPAD_LENGTH)

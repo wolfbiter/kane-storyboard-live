@@ -37,7 +37,7 @@
 ;
 
 (def toggle-deck1 {
-  :name :toggle-deck1
+  :name "toggle-deck1"
   :callback (fn [event]
     (swap! deck-volumes (fn [prev-vols]
       (let [old-vol (nth prev-vols 0)
@@ -46,7 +46,7 @@
         (assoc prev-vols 0 new-vol)))))})
 
 (def toggle-deck2 {
-  :name :toggle-deck2
+  :name "toggle-deck2"
   :callback (fn [event]
     (swap! deck-volumes (fn [prev-vols]
       (let [old-vol (nth prev-vols 1)
@@ -60,7 +60,7 @@
 
 ; 4-beat uplifters
 (def rand-uplift4 {
-  :name :rand-uplift4
+  :name "rand-uplift4"
   :sample? true
   :in-advance 4
   :callback (do-rand-action [
@@ -72,7 +72,7 @@
 
 ; 8-beat uplifters
 (def rand-uplift8 {
-  :name :rand-uplift8
+  :name "rand-uplift8"
   :sample? true
   :in-advance 8
   :callback (do-rand-action [
@@ -85,7 +85,7 @@
 
 ; 16-beat uplifters
 (def rand-uplift16 {
-  :name :rand-uplift16
+  :name "rand-uplift16"
   :sample? true
   :in-advance 16
   :callback (do-rand-action [
@@ -97,7 +97,7 @@
 
 ; crash downlifters
 (def rand-downlift-crash {
-  :name :rand-downlift-crash
+  :name "rand-downlift-crash"
   :sample? true
   :callback (do-rand-action [
 
@@ -120,7 +120,7 @@
 
 ; explode downlifters
 (def rand-downlift-explode {
-  :name :rand-downlift-explode
+  :name "rand-downlift-explode"
   :sample? true
   :callback (do-rand-action [
 
@@ -141,7 +141,7 @@
 
 ; fx downlifters
 (def rand-downlift-fx {
-  :name :rand-downlift-fx
+  :name "rand-downlift-fx"
   :sample? true
   :callback (do-rand-action [
     

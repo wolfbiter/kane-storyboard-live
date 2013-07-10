@@ -3,6 +3,7 @@
     [beatfn-live.globals]
     [beatfn-live.outputs]
     [beatfn-live.utilities]
+    [beatfn-live.actionDB]
     [beatfn-live.launchpad :only [draw-grid]]))
 
 ;
@@ -63,56 +64,46 @@
     (cond
       (= 0 @repeat-state) (draw-grid lpad x y :off)
       (= 1 @repeat-state) (draw-grid lpad x y :green :low))))
+      ;(= 2 @repeat-state) (draw-grid lpad x y :red :low))))
 
 (defn assert-zoom-state-leds []
   (let [x1 (:x zoom-state-up-loc)
         y1 (:y zoom-state-up-loc)
         x2 (:x zoom-state-down-loc)
         y2 (:y zoom-state-down-loc)]
+
     (if (<= @zoom-state (/ 1 4))
       (draw-grid lpad x1 y1 :off)
       (draw-grid lpad x1 y1 :green :low))
+
     (if (>= @zoom-state 1)
       (draw-grid lpad x2 y2 :off)
       (draw-grid lpad x2 y2 :red :low))))
 
 (defn assert-grid-led [x y]
-  (let [active-actions (get-active-actions)
-        scheduled-actions @scheduled-actions
-        beat (xy->beat x y)
-        beat-event (get-beat-event beat)
-        active-scene @scene-state
-        scene-state (get-scene-state-kw active-scene)
-        possible-actions (scene-state (beat-event scheduled-actions))]
-
-        ; if no actions are scheduled for this grid spot, turn the led off
-        (if (empty? possible-actions)
-          (draw-grid lpad x y :off)
-
-          ; else check if any currently active actions are scheduled for this spot
-          (let [matching-actions
-                (filter #(not (nil? %))
-                  (map #((:name %) possible-actions) active-actions))]
-
-            ; if there are none, light the led red
-            (if (empty? matching-actions)
-             (draw-grid lpad x y :red :low)
-
-             ; else light the led green
-             (draw-grid lpad x y :green :low))))))
+  (let [[possible-actions matching-actions] (get-matching-actions @scene-state (xy->beat x y))]
+    (cond
+      (empty? possible-actions) (draw-grid lpad x y :off)
+      (empty? matching-actions) (draw-grid lpad x y :red :low)
+      :else (draw-grid lpad x y :green :low))))
 
 (defn assert-tracker-led [raw-beat]
   (let [[x y] (beat->xy raw-beat)]
     (cond
+
       ; if given beat is whole and tracker is running
       (and (== raw-beat (int raw-beat))
            (= 2 @tracker-state))
       (draw-grid lpad x y :green :high)
+
       ; if tracker is running
       (= 2 @tracker-state)
       (draw-grid lpad x y :orange :low)
+
       :else
       (draw-grid lpad x y :off))
+
+    ; after sorting out the current LED, figure out prev LED
     (let [[prevx prevy] (prev-grid-pos x y)]
       (assert-grid-led prevx prevy))))
 
@@ -132,6 +123,7 @@
     (cond
 
       (= bank-state 0) ; action bank
+      ; TODO: use :bank-pos to determine which LEDs should be orange
       (let [on @active-action-numbers
             off (filter #(= -1 (.indexOf on %)) (range LAUNCHPAD_LENGTH))]
         (domap #(draw-grid lpad x % :red :low) off)
