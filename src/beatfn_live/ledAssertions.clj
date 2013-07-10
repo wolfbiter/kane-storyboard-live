@@ -101,11 +101,16 @@
              ; else light the led green
              (draw-grid lpad x y :green :low))))))
 
-(defn assert-tracker-led [x y]
-  (do
+(defn assert-tracker-led [raw-beat]
+  (let [[x y] (beat->xy raw-beat)]
     (cond
+      ; if given beat is whole and tracker is running
+      (and (== raw-beat (int raw-beat))
+           (= 2 @tracker-state))
+      (draw-grid lpad x y :green :high)
+      ; if tracker is running
       (= 2 @tracker-state)
-      (draw-grid lpad x y :orange :high)
+      (draw-grid lpad x y :orange :low)
       :else
       (draw-grid lpad x y :off))
     (let [[prevx prevy] (prev-grid-pos x y)]

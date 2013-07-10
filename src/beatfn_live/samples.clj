@@ -25,7 +25,7 @@
   (let [sample-buf (load-sample uri)
         id (buffer-id sample-buf)
         sample #(play-sample id (* vol %) rate)]
-    (if (= 0 offset)
+    (if (== 0 offset)
       (fn [event vol] (sample vol))
       (offset-sample sample offset)))))
 
