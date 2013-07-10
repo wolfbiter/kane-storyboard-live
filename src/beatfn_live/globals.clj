@@ -4,7 +4,7 @@
 
 (def BPM 128)
 (def m (metronome BPM))
-(def NUM_SCENES 2) ; max of 4, check out assert-scene-state-led if this changes
+(def NUM_ACTION_STATES 4) ; currently handles 4 preset action banks
 (def NUM_BANKS 4) ; number of possible banks
 (def MIN_STEP (/ 1 4)) ; minimum possible step size
 (def LAUNCHPAD_LENGTH 8)
@@ -39,11 +39,14 @@
    :callback (fn [event] (println "null-action called!"))})
 
 ; an endless vector of possible actions TODO: make it so this isn't finite length
-(def loaded-actions (atom (vec (repeat LAUNCHPAD_LENGTH null-action))))
+(def loaded-actions (atom (vec (repeat (* NUM_ACTION_STATES LAUNCHPAD_LENGTH) null-action))))
 
 (defn make-bank []
   (do (println "Money.")
       (atom (vec (repeat LAUNCHPAD_LENGTH null-callback)))))
+
+; action state determines which buttons are currently loaded into the action bank
+(def action-state (atom 0))
 
 ; a vector of action buttons
 (def action-bank (make-bank))
@@ -87,7 +90,9 @@
 ; TODO: turn special buttons into maps of location and callback
 (def zoom-state-up-loc {:x 0 :y 8})
 (def zoom-state-down-loc {:x 1 :y 8})
+(def scene-state-left-loc {:x 2 :y 8})
+(def scene-state-right-loc {:x 3 :y 8})
 (def tracker-state-loc {:x 4 :y 8})
 (def repeat-state-loc {:x 5 :y 8})
-(def scene-state-loc {:x 6 :y 8})
+(def action-state-loc {:x 6 :y 8})
 (def bank-state-loc {:x 7 :y 8})

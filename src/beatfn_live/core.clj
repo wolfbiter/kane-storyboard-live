@@ -52,7 +52,7 @@
 ; startup stuff
 ;
 
-; load actions
+; action state 0
 (load-action rand-uplift4 0)
 (load-action rand-uplift8 1)
 (load-action rand-uplift16 2)
@@ -61,6 +61,15 @@
 (load-action rand-downlift-fx 5)
 (load-action toggle-deck1 6)
 (load-action toggle-deck2 7)
+
+; action state 1
+(load-action rand-downlift-explode 8)
+
+; action state 2
+(load-action rand-downlift-crash 16)
+
+; action state 3
+(load-action rand-downlift-fx 24)
 
 ; set bank buttons
 (domap #(insert-callback bank-button LAUNCHPAD_LENGTH %) (range LAUNCHPAD_LENGTH))
@@ -80,11 +89,17 @@
 (insert-callback zoom-state-button-down
   (:x zoom-state-down-loc) (:y zoom-state-down-loc))
 
+(insert-callback scene-state-left-button
+  (:x scene-state-left-loc) (:y scene-state-left-loc))
+
+(insert-callback scene-state-right-button
+  (:x scene-state-right-loc) (:y scene-state-right-loc))
+
 (insert-callback tracker-state-button
   (:x tracker-state-loc) (:y tracker-state-loc))
 
-(insert-callback scene-state-button
-  (:x scene-state-loc) (:y scene-state-loc))
+(insert-callback action-state-button
+  (:x action-state-loc) (:y action-state-loc))
 
 (insert-callback repeat-state-button
   (:x repeat-state-loc) (:y repeat-state-loc))

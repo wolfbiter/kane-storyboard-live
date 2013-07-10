@@ -13,20 +13,6 @@
 
 (defn get-current-zoom-length [] (/ @zoom-state LAUNCHPAD_LENGTH))
 
-(defn get-action-handle
-  [scheduled-action]
-    (let [beat-event (:beat-event scheduled-action)
-          name (:name scheduled-action)
-          scene-state (get-scene-state-kw @scene-state)]
-      (keyword (str beat-event "scene" scene-state name))))
-
-(defn load-action [action i]
-  (swap! loaded-actions (fn [prev] (assoc prev i action))))
-
-(defn get-active-actions []
-  (let [active-action-numbers @active-action-numbers]
-   (map #(nth @loaded-actions %) active-action-numbers)))
-
 (defn domap [& args]
   (doall (apply map args)))
 
@@ -39,6 +25,22 @@
 
 (defn get-beat-event [raw-beat]
   (keyword (str "beat-event" (mod-beat-max raw-beat))))
+
+(defn get-action-handle
+  [scheduled-action]
+    (let [beat-event (:beat-event scheduled-action)
+          name (:name scheduled-action)
+          scene-state (get-scene-state-kw @scene-state)]
+      (keyword (str beat-event "scene" scene-state name))))
+
+(defn load-action [action i]
+  (swap! loaded-actions (fn [prev] (assoc prev i action))))
+
+(defn get-active-actions []
+  (let [active-action-numbers @active-action-numbers]
+   (map
+    #(nth @loaded-actions (+ (* LAUNCHPAD_LENGTH @action-state) %))
+    active-action-numbers)))
 
 (defn xy->beat [x y]
   (let [beat (+ (* y LAUNCHPAD_LENGTH) x)]

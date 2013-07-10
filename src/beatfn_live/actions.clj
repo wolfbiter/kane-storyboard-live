@@ -22,7 +22,7 @@
       (remove-handler action-handle) ; unstage event
       (swap! scheduled-actions ; remove action from scheduled actions
         (fn [prev]
-          (let [scene-state (get-scene-state-kw @scene-state)
+          (let [scene-state (get-scene-state-kw (:scene-state scheduled-action))
                 prev-scenes (beat-event prev)
                 prev-actions (scene-state prev-scenes)
                 new-actions (dissoc prev-actions (:name scheduled-action))
@@ -52,7 +52,7 @@
             _beat)
         [x y] (beat->xy beat)
         beat-event (get-beat-event beat)
-        _scheduled-action  (assoc action :beat-event beat-event :beat beat)
+        _scheduled-action  (assoc action :beat-event beat-event :beat beat :scene-state @scene-state)
         scheduled-action  (if (= 1 @repeat-state) ; make this repeat if repeat is on
                             (assoc _scheduled-action :repeat? true)
                             _scheduled-action)

@@ -21,8 +21,8 @@
       (let [scalar 0.5]
         (swap! zoom-state (partial * scalar))
         (draw-grid lpad x y :green :high)
-        (assert-grid-leds)))
-    (assert-zoom-state-leds))
+        (assert-grid-leds))
+    (assert-zoom-state-leds)))
 
 (defn zoom-state-button-down
   [x y pressed?]
@@ -30,8 +30,8 @@
       (let [scalar 2]
         (swap! zoom-state (partial * scalar))
         (draw-grid lpad x y :red :high)
-        (assert-grid-leds)))
-    (assert-zoom-state-leds))
+        (assert-grid-leds))
+    (assert-zoom-state-leds)))
 
 (defn bank-state-button
   [x y pressed?]
@@ -91,15 +91,34 @@
           (set-atom! tracker-state 0)
         (= 2 @tracker-state)
           (set-atom! tracker-state 1))
-      (assert-tracker-led x y)
       (assert-tracker-state-led))))
 
-(defn scene-state-button
+; TODO: make these the same button, sohould be easy with y*-1 or something
+(defn scene-state-left-button
   [x y pressed?]
     (if pressed?
       (do
-        (swap! scene-state (fn [prev] (mod (inc prev) NUM_SCENES)))
-        (assert-scene-state-led)
+        (swap! scene-state dec)
+        (draw-grid lpad x y :orange :high)
+        (assert-grid-leds))
+      (assert-scene-state-leds)))
+
+(defn scene-state-right-button
+  [x y pressed?]
+    (if pressed?
+      (do
+        (swap! scene-state inc)
+        (draw-grid lpad x y :orange :high)
+        (assert-grid-leds))
+      (assert-scene-state-leds)))
+
+(defn action-state-button
+  [x y pressed?]
+    (if pressed?
+      (do
+        (swap! action-state (fn [prev] (mod (inc prev) NUM_ACTION_STATES)))
+        (assert-action-state-led)
+        (assert-bank-leds)
         (assert-grid-leds))))
 
 (defn repeat-state-button

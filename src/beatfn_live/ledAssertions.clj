@@ -14,15 +14,39 @@
         y (:y tracker-state-loc)]
     (cond
       (= 0 @tracker-state) (draw-grid lpad x y :off)
-      (= 1 @tracker-state) (draw-grid lpad x y :orange :low)
+      (= 1 @tracker-state) (draw-grid lpad x y :orange :high)
       (= 2 @tracker-state) (draw-grid lpad x y :green :low))))
 
-(defn assert-scene-state-led []
-  (let [x (:x scene-state-loc)
-        y (:y scene-state-loc)]
+(defn assert-scene-state-leds []
+  (let [x1 (:x scene-state-left-loc)
+        y1 (:y scene-state-left-loc)
+        x2 (:x scene-state-right-loc)
+        y2 (:y scene-state-right-loc)]
+
+    ; color arrows green to indicate we are in scene 0
+    ;(if (= @scene-state 0)
+    ;  (do
+    ;    (draw-grid lpad x1 y1 :green :low)
+    ;    (draw-grid lpad x2 y2 :green :low))
+
+      ; TODO: add more colors for more differentiation?
+      ;       with 2 arrows and 4 colors apiece, i count 4^2 configurations
+      ; else, color them orange
+        (if (<= @scene-state 0)
+          (draw-grid lpad x1 y1 :off)
+          (draw-grid lpad x1 y1 :orange :low))
+        (if (>= @scene-state 3)
+          (draw-grid lpad x2 y2 :off)
+          (draw-grid lpad x2 y2 :orange :low))))
+
+(defn assert-action-state-led []
+  (let [x (:x action-state-loc)
+        y (:y action-state-loc)]
     (cond
-      (= 0 @scene-state) (draw-grid lpad x y :red :low)
-      (= 1 @scene-state) (draw-grid lpad x y :orange :low))))
+      (= 0 @action-state) (draw-grid lpad x y :off :low)
+      (= 1 @action-state) (draw-grid lpad x y :green :low)
+      (= 2 @action-state) (draw-grid lpad x y :red :low)
+      (= 3 @action-state) (draw-grid lpad x y :orange :low))))
 
 (defn assert-bank-state-led []
   (let [x (:x bank-state-loc)
@@ -79,8 +103,10 @@
 
 (defn assert-tracker-led [x y]
   (do
-    (if (= 2 @tracker-state)
+    (cond
+      (= 2 @tracker-state)
       (draw-grid lpad x y :orange :high)
+      :else
       (draw-grid lpad x y :off))
     (let [[prevx prevy] (prev-grid-pos x y)]
       (assert-grid-led prevx prevy))))
@@ -120,7 +146,8 @@
   (assert-tracker-state-led)
   (assert-zoom-state-leds)
   (assert-bank-state-led)
-  (assert-scene-state-led)
+  (assert-scene-state-leds)
+  (assert-action-state-led)
   (assert-repeat-state-led)
   (assert-bank-leds)
   (assert-grid-leds))
