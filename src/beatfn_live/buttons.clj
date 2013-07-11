@@ -105,6 +105,7 @@
       (do
         (swap! scene-state dec)
         (draw-grid lpad x y :orange :high)
+        (assert-bank-leds)
         (assert-grid-leds))
       (assert-scene-state-leds)))
 
@@ -114,6 +115,7 @@
       (do
         (swap! scene-state inc)
         (draw-grid lpad x y :orange :high)
+        (assert-bank-leds)
         (assert-grid-leds))
       (assert-scene-state-leds)))
 

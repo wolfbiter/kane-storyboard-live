@@ -5,7 +5,7 @@
     [beatfn-live.globals]
     [beatfn-live.outputs]
     [beatfn-live.utilities]
-    [beatfn-live.ledAssertions :only [assert-grid-led assert-grid-leds]]))
+    [beatfn-live.ledAssertions :only [assert-grid-led assert-grid-leds assert-bank-leds]]))
 
 ;
 ; actions
@@ -19,7 +19,8 @@
       ; first unschedule the overtone event call
       (remove-handler action-handle)
       ; then remove any matches of the given action
-      (remove-actions (dissoc scheduled-action :callback)))))
+      (remove-actions (dissoc scheduled-action :callback))
+      (assert-bank-leds))))
 
 (defn make-event-fn [scheduled-action]
   (let [callback (:callback scheduled-action)

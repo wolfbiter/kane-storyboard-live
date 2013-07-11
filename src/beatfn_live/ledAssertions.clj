@@ -123,11 +123,13 @@
     (cond
 
       (= bank-state 0) ; action bank
-      ; TODO: use :bank-pos to determine which LEDs should be orange
-      (let [on @active-action-numbers
-            off (filter #(= -1 (.indexOf on %)) (range LAUNCHPAD_LENGTH))]
-        (domap #(draw-grid lpad x % :red :low) off)
-        (domap #(draw-grid lpad x % :green :high) on))
+      (let [green @active-action-numbers
+            orange (map :bank-pos (find-actions {:scene-state @scene-state}))
+            green-orange (flatten (conj green orange))
+            red (filter #(= -1 (.indexOf green-orange %)) (range LAUNCHPAD_LENGTH))]
+        (domap #(draw-grid lpad x % :red :low) red)
+        (domap #(draw-grid lpad x % :orange :low) orange)
+        (domap #(draw-grid lpad x % :green :high) green))
 
       (= bank-state 1) ; volume bank
       (do (set-column lpad LAUNCHPAD_LENGTH :off) ; first clear all

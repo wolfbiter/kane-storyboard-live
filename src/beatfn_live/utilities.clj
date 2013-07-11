@@ -32,7 +32,7 @@
   [scheduled-action]
     (let [beat-event (:beat-event scheduled-action)
           name (:name scheduled-action)
-          scene-state @scene-state]
+          scene-state (:scene-state scheduled-action)]
       (keyword (str beat-event "_scene" scene-state "_" name))))
 
 (defn load-action [action i]
