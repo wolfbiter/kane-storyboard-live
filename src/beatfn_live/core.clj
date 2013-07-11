@@ -63,6 +63,43 @@
 (load-action toggle-deck1 6)
 (load-action toggle-deck2 7)
 
+; TODO: move this!
+(def kick1 {
+  :name "kick1"
+  :sample? true
+  :callback (fn [event] (sample "resources/kicks/1.wav"))
+  })
+
+(def closed-hat1 {
+  :name "closed-hat1"
+  :sample? true
+  :callback (fn [event] (sample "resources/closed-hats/1.wav"))
+  })
+
+(def open-hat1 {
+  :name "open-hat1"
+  :sample? true
+  :callback (fn [event] (sample "resources/open-hats/1.wav"))
+  })
+
+(def snare1 {
+  :name "snare1"
+  :sample? true
+  :callback (fn [event] (sample "resources/snares/1.wav"))
+  })
+
+(def percussion1 {
+  :name "percussion1"
+  :sample? true
+  :callback (fn [event] (sample "resources/percussions/1.wav"))
+  })
+
+;(load-action kick1 0)
+;(load-action closed-hat1 1)
+;(load-action open-hat1 2)
+;(load-action snare1 3)
+;(load-action percussion1 4)
+
 ; action state 1
 (load-action rand-downlift-explode 8)
 
