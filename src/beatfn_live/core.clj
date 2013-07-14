@@ -110,40 +110,40 @@
 (load-action rand-downlift-fx 24)
 
 ; set bank buttons
-(domap #(insert-callback bank-button LAUNCHPAD_LENGTH %) (range LAUNCHPAD_LENGTH))
+(no-print (domap #(insert-callback bank-button LAUNCHPAD_LENGTH %) (range LAUNCHPAD_LENGTH)))
 (set-atom! action-bank (vec (repeat LAUNCHPAD_LENGTH action-button)))
 (set-atom! volume-bank (vec (repeat LAUNCHPAD_LENGTH volume-button)))
 
 ; set grid buttons
-(doall
+(no-print (doall
   (for [x (range LAUNCHPAD_LENGTH)
         y (range LAUNCHPAD_LENGTH)]
-    (insert-callback grid-button x y)))
+    (insert-callback grid-button x y))))
 
 ; set special buttons
-(insert-callback zoom-state-button-up
-  (:x zoom-state-up-loc) (:y zoom-state-up-loc))
+(no-print (insert-callback zoom-state-button-up
+  (:x zoom-state-up-loc) (:y zoom-state-up-loc)))
 
-(insert-callback zoom-state-button-down
-  (:x zoom-state-down-loc) (:y zoom-state-down-loc))
+(no-print (insert-callback zoom-state-button-down
+  (:x zoom-state-down-loc) (:y zoom-state-down-loc)))
 
-(insert-callback scene-state-left-button
-  (:x scene-state-left-loc) (:y scene-state-left-loc))
+(no-print (insert-callback scene-state-left-button
+  (:x scene-state-left-loc) (:y scene-state-left-loc)))
 
-(insert-callback scene-state-right-button
-  (:x scene-state-right-loc) (:y scene-state-right-loc))
+(no-print (insert-callback scene-state-right-button
+  (:x scene-state-right-loc) (:y scene-state-right-loc)))
 
-(insert-callback tracker-state-button
-  (:x tracker-state-loc) (:y tracker-state-loc))
+(no-print (insert-callback tracker-state-button
+  (:x tracker-state-loc) (:y tracker-state-loc)))
 
-(insert-callback action-state-button
-  (:x action-state-loc) (:y action-state-loc))
+(no-print (insert-callback action-state-button
+  (:x action-state-loc) (:y action-state-loc)))
 
-(insert-callback repeat-state-button
-  (:x repeat-state-loc) (:y repeat-state-loc))
+(no-print (insert-callback repeat-state-button
+  (:x repeat-state-loc) (:y repeat-state-loc)))
 
-(insert-callback bank-state-button
-  (:x bank-state-loc) (:y bank-state-loc))
+(no-print (insert-callback bank-state-button
+  (:x bank-state-loc) (:y bank-state-loc)))
 
 ; final ready steps
 (assert-leds)

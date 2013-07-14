@@ -8,6 +8,9 @@
 ; utilities
 ;
 
+(defn no-print [& args]
+  (println))
+
 (defn get-sample-volume [] (/ @sample-volume-state LAUNCHPAD_LENGTH))
 
 (defn clamp [n min max]
@@ -37,7 +40,8 @@
       (keyword (str beat-event "_scene" scene-state "_" name))))
 
 (defn load-action [action i]
-  (swap! loaded-actions (fn [prev] (assoc prev i (assoc action :bank-pos i)))))
+  (no-print
+    (swap! loaded-actions (fn [prev] (assoc prev i (assoc action :bank-pos i))))))
 
 (defn get-active-actions []
   (map

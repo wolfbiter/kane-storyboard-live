@@ -19,7 +19,7 @@
 
     ; TODO: move this if check elsewhere so it's not a bottleneck
     (if storyboard-on?
-      (apply-by (m next-raw-beat) #'run-tracker [lpad next-raw-beat]))
+      (apply-at (m next-raw-beat) #'run-tracker [lpad next-raw-beat]))
 
     (assert-tracker-led raw-beat)
     (event (get-beat-event raw-beat))))
@@ -30,7 +30,7 @@
   ([x y]
     (let [beat (xy->beat x y)]
       ;(ctl step-tracker :reset 0)
-      (metro-start m (- beat 1))
+      (metro-start m beat)
       ;(at (m (+ (m) 1)) (ctl step-tracker :reset 1))
       (set-atom! tracker-state 2)
       (assert-tracker-state-led)
