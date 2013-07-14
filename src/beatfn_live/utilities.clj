@@ -20,8 +20,8 @@
   (doall (apply map args)))
 
 (defn mod-beat-max [beat]
-  ;  (mod beat (* LAUNCHPAD_AREA @zoom-state)))
-  (mod beat (* MAX_ZOOM LAUNCHPAD_AREA)))
+  (mod beat (* LAUNCHPAD_AREA @zoom-state)))
+  ;(mod beat (* MAX_ZOOM LAUNCHPAD_AREA)))
 
 (defn mod-beat-zoom [beat]
   (mod beat (* LAUNCHPAD_AREA @zoom-state)))
