@@ -22,11 +22,12 @@
 (def tracker-state (atom 1)) ; 0: paused with LED off
                              ; 1: ready with LED orange
                              ; 2: playing with LED green
+; action state determines which action bank is currently loaded
+(def action-state (atom 0))
 
 ; TODO: scrolling through active actions (implementation: scrollthrough active bank?)
 ; TODO: looping. make it so that you can select an area over which to loop
 ; TODO: copy/paste regions. selection goes from top-left to bottom-right.
-; TODO: to make scenes really awesome, they each need a crossfader "prop"!
 ; TODO: figure out underlying clojure-launchpad stuff to get yellow/more intensities
 
 (defn null-callback [x y pressed?] nil)
@@ -35,18 +36,15 @@
   {:name "null"
    :callback (fn [event] (println "null-action called!"))})
 
-; an endless vector of possible actions TODO: make it so this isn't finite length
-(def loaded-actions (atom (vec (repeat (* NUM_ACTION_STATES LAUNCHPAD_LENGTH) null-action))))
-
 (defn make-bank []
   (do (println "Money.")
       (atom (vec (repeat LAUNCHPAD_LENGTH null-callback)))))
 
-; action state determines which buttons are currently loaded into the action bank
-(def action-state (atom 0))
+; a vector of vectors of action buttons
+(def action-banks (vec (repeatedly NUM_ACTION_STATES make-bank)))
 
-; a vector of action buttons
-(def action-bank (make-bank))
+; vector of action buttons
+(def action-buttons (make-bank))
 
 ; vector of volume choices
 (def volume-bank (make-bank))
@@ -59,8 +57,10 @@
 ;                                     assert-grid-led, and writing fxns to fill this
 (def zoom-select-bank (make-bank))
 
-; the currently loaded bank (which is a vector of functions)
-(def banks (atom [action-bank volume-bank grid-editor-bank zoom-select-bank]))
+; TODO: should all the following "banks" just be turned into their
+;       single delegation functions? check code near where core sets bank buttons.
+; vector of banks for the vertical arrow buttons
+(def banks [action-buttons volume-bank grid-editor-bank zoom-select-bank])
 
 ; number which tells how many action buttons are currently held down
 (def actions-pressed (atom 0))

@@ -124,11 +124,13 @@
 
       (= bank-state 0) ; action bank
       (let [green @active-action-numbers
-            orange (map :bank-pos (find-actions {:scene-state @scene-state}))
-            green-orange (flatten (conj green orange))
-            red (filter #(= -1 (.indexOf green-orange %)) (range LAUNCHPAD_LENGTH))]
+            red (map :bank-pos
+              (filter #(= @action-state (:action-state %))
+                (find-actions {:scene-state @scene-state})))
+            green-red (flatten (conj green red))
+            off (filter #(= -1 (.indexOf green-red %)) (range LAUNCHPAD_LENGTH))]
+        (domap #(draw-grid lpad x % :off) off)
         (domap #(draw-grid lpad x % :red :low) red)
-        (domap #(draw-grid lpad x % :orange :low) orange)
         (domap #(draw-grid lpad x % :green :high) green))
 
       (= bank-state 1) ; volume bank

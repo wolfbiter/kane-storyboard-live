@@ -44,7 +44,7 @@
 
 (defn bank-button
   [x y pressed?]
-  (let [active-bank (nth @banks @bank-state)
+  (let [active-bank (nth banks @bank-state)
         bank-fn (nth @active-bank y)]
     (bank-fn x y pressed?)))
 

@@ -39,13 +39,20 @@
           scene-state (:scene-state scheduled-action)]
       (keyword (str beat-event "_scene" scene-state "_" name))))
 
-(defn load-action [action i]
+(defn get-action-bank
+  ([] (get-action-bank @action-state))
+  ([bank] (nth action-banks bank)))
+
+; TODO: move this associating actions to somewhere sensical? like a function
+;       which gathers all things that must be associated to new actions? maybe not.
+(defn load-action [action bank pos]
   (no-print
-    (swap! loaded-actions (fn [prev] (assoc prev i (assoc action :bank-pos i))))))
+    (swap! (get-action-bank bank) (fn [prev]
+      (assoc prev pos (assoc action :action-state @action-state :bank-pos pos))))))
 
 (defn get-active-actions []
   (map
-    #(nth @loaded-actions (+ (* LAUNCHPAD_LENGTH @action-state) %))
+    #(nth @(get-action-bank) %)
     @active-action-numbers))
 
 (defn get-matching-actions [scene-state beat]

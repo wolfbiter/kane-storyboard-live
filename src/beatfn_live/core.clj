@@ -54,14 +54,14 @@
 ;
 
 ; action state 0
-(load-action rand-uplift4 0)
-(load-action rand-uplift8 1)
-(load-action rand-uplift16 2)
-(load-action rand-downlift-crash 3)
-(load-action rand-downlift-explode 4)
-(load-action rand-downlift-fx 5)
-(load-action toggle-deck1 6)
-(load-action toggle-deck2 7)
+(load-action rand-uplift4 0 0)
+(load-action rand-uplift8 0 1)
+(load-action rand-uplift16 0 2)
+(load-action rand-downlift-crash 0 3)
+(load-action rand-downlift-explode 0 4)
+(load-action rand-downlift-fx 0 5)
+(load-action toggle-deck1 0 6)
+(load-action toggle-deck2 0 7)
 
 ; TODO: move this!
 (def kick1 {
@@ -101,18 +101,18 @@
 ;(load-action percussion1 4)
 
 ; action state 1
-(load-action rand-downlift-explode 8)
+;(load-action rand-downlift-explode 8)
 
 ; action state 2
-(load-action rand-downlift-crash 16)
+;(load-action rand-downlift-crash 16)
 
 ; action state 3
-(load-action rand-downlift-fx 24)
+;(load-action rand-downlift-fx 24)
 
 ; set bank buttons
 (no-print (domap #(insert-callback bank-button LAUNCHPAD_LENGTH %) (range LAUNCHPAD_LENGTH)))
-(set-atom! action-bank (vec (repeat LAUNCHPAD_LENGTH action-button)))
 (set-atom! volume-bank (vec (repeat LAUNCHPAD_LENGTH volume-button)))
+(set-atom! action-buttons (vec (repeat LAUNCHPAD_LENGTH action-button)))
 
 ; set grid buttons
 (no-print (doall
