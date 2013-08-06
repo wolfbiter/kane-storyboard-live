@@ -73,7 +73,7 @@
   (let [beat (/ (mod-beat-zoom raw-beat) @zoom-state)
         x (mod beat LAUNCHPAD_LENGTH)
         y (/ (- beat x) LAUNCHPAD_LENGTH)]
-    [x y]))
+    [(int x) (int y)]))
 
 (defn prev-grid-pos [x y]
   (let [x1 (mod (dec x) LAUNCHPAD_LENGTH)

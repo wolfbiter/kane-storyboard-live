@@ -28,9 +28,11 @@
   [& args]
   (apply remove (cons DB_NAME args)))
   
+; TODO: turn this into a safe insert, so i quit getting this serial error?
 (defn insert-action
   [& args]
-  (apply insert (cons DB_NAME args)))
+  (do (println "hi! inserting action: " args)
+  (apply insert (cons DB_NAME args))))
 
 (defn insert-actions
   [& args]
