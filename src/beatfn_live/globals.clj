@@ -7,7 +7,7 @@
 (def NUM_ACTION_STATES 4) ; currently handles 4 preset action banks
 (def NUM_BANKS 4) ; number of possible banks
 (def MIN_STEP (/ 1 4)) ; minimum possible step size
-(def MAX_ZOOM 1.0) ; be wary of schedule-action when changing this!
+(def MAX_STEP 1.0) ; be wary of schedule-action when changing this!
 (def LAUNCHPAD_LENGTH 8)
 (def LAUNCHPAD_AREA (* LAUNCHPAD_LENGTH LAUNCHPAD_LENGTH))
 (def scene-state (atom 0)) ; the number of the currently active scene
@@ -15,7 +15,7 @@
                           ; 1 for grid editor bank
                           ; 2 for zoom select bank
                           ; 3 unused atm
-(def zoom-state (atom 1.0)) ; start off with zoom scale of 1
+(def step-size (atom 1.0)) ; start off with every square is a quarter note
 
 (def sample-volume-state (atom 4)) ; last pressed volume, starts at 4/8
 (def repeat-state (atom 0)) ; 0 for repeat off, 1 for repeat on
@@ -76,8 +76,8 @@
 ;
 
 ; TODO: turn special buttons into maps of location and callback
-(def zoom-state-up-loc {:x 0 :y 8})
-(def zoom-state-down-loc {:x 1 :y 8})
+(def step-size-up-loc {:x 0 :y 8})
+(def step-size-down-loc {:x 1 :y 8})
 (def scene-state-left-loc {:x 2 :y 8})
 (def scene-state-right-loc {:x 3 :y 8})
 (def tracker-state-loc {:x 4 :y 8})

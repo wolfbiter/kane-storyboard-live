@@ -3,7 +3,7 @@
     [beatfn-live.globals]
     [beatfn-live.outputs]
     [beatfn-live.utilities]
-    [beatfn-live.actionDB]
+    [beatfn-live.DB]
     [beatfn-live.launchpad :only [draw-grid]]))
 
 ;
@@ -66,17 +66,17 @@
       (= 1 @repeat-state) (draw-grid lpad x y :green :low))))
       ;(= 2 @repeat-state) (draw-grid lpad x y :red :low))))
 
-(defn assert-zoom-state-leds []
-  (let [x1 (:x zoom-state-up-loc)
-        y1 (:y zoom-state-up-loc)
-        x2 (:x zoom-state-down-loc)
-        y2 (:y zoom-state-down-loc)]
+(defn assert-step-size-leds []
+  (let [x1 (:x step-size-up-loc)
+        y1 (:y step-size-up-loc)
+        x2 (:x step-size-down-loc)
+        y2 (:y step-size-down-loc)]
 
-    (if (<= @zoom-state (/ 1 4))
+    (if (<= @step-size (/ 1 4))
       (draw-grid lpad x1 y1 :off)
       (draw-grid lpad x1 y1 :green :low))
 
-    (if (>= @zoom-state 1)
+    (if (>= @step-size 1)
       (draw-grid lpad x2 y2 :off)
       (draw-grid lpad x2 y2 :red :low))))
 
@@ -145,7 +145,7 @@
 
 (defn assert-leds []
   (assert-tracker-state-led)
-  (assert-zoom-state-leds)
+  (assert-step-size-leds)
   (assert-bank-state-led)
   (assert-scene-state-leds)
   (assert-action-state-led)

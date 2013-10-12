@@ -1,7 +1,7 @@
 (ns beatfn-live.actions
   (:use
     [overtone.live :only [remove-handler on-event]]
-    [beatfn-live.actionDB]
+    [beatfn-live.DB]
     [beatfn-live.globals]
     [beatfn-live.outputs]
     [beatfn-live.utilities]
@@ -38,10 +38,10 @@
   ([action _beat checked-loop?]
 
     ; first, make sure this action loops properly based on current zoom
-    ;(if (and (not checked-loop?) (< @zoom-state MAX_ZOOM))
-    ;  (let [step (/ @zoom-state MAX_ZOOM)]
+    ;(if (and (not checked-loop?) (< @step-size MAX_STEP))
+    ;  (let [step (/ @step-size MAX_STEP)]
     ;    (println "step: " step)
-    ;    (domap #(schedule-action action (+ _beat (* LAUNCHPAD_AREA %)) true) (range step MAX_ZOOM step))))
+    ;    (domap #(schedule-action action (+ _beat (* LAUNCHPAD_AREA %)) true) (range step MAX_STEP step))))
 
     ; make the scheduled action
     (let [beat
@@ -51,7 +51,10 @@
               _beat)
           [x y] (beat->xy beat)
           beat-event (get-beat-event beat)
-          scheduled-action (assoc action :beat-event beat-event :beat beat :scene-state @scene-state)
+          scheduled-action (assoc action 
+            :beat-event beat-event
+            :beat (double beat)
+            :scene-state @scene-state)
           action-handle (get-action-handle scheduled-action)
           event-fn (make-event-fn scheduled-action)]
 

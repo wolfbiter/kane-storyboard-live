@@ -6,7 +6,7 @@
     [beatfn-live.actions]
     [beatfn-live.samples]
     [beatfn-live.outputs]
-    [beatfn-live.actionDB]
+    [beatfn-live.DB]
     [beatfn-live.ledAssertions]
     [beatfn-live.launchpad :only [draw-grid on-grid-pressed]]
     [beatfn-live.utilities]
@@ -94,11 +94,11 @@
   :callback (fn [event] (sample "resources/percussions/1.wav"))
   })
 
-;(load-action kick1 0)
-;(load-action closed-hat1 1)
-;(load-action open-hat1 2)
-;(load-action snare1 3)
-;(load-action percussion1 4)
+(load-action kick1 1 0)
+(load-action closed-hat1 1 1)
+(load-action open-hat1 1 2)
+(load-action snare1 1 3)
+(load-action percussion1 1 4)
 
 ; action state 1
 ;(load-action rand-downlift-explode 8)
@@ -121,11 +121,11 @@
     (insert-callback grid-button x y))))
 
 ; set special buttons
-(no-print (insert-callback zoom-state-button-up
-  (:x zoom-state-up-loc) (:y zoom-state-up-loc)))
+(no-print (insert-callback step-size-button-up
+  (:x step-size-up-loc) (:y step-size-up-loc)))
 
-(no-print (insert-callback zoom-state-button-down
-  (:x zoom-state-down-loc) (:y zoom-state-down-loc)))
+(no-print (insert-callback step-size-button-down
+  (:x step-size-down-loc) (:y step-size-down-loc)))
 
 (no-print (insert-callback scene-state-left-button
   (:x scene-state-left-loc) (:y scene-state-left-loc)))

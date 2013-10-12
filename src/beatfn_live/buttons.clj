@@ -6,7 +6,7 @@
     [beatfn-live.samples]
     [beatfn-live.outputs]
     [beatfn-live.actions]
-    [beatfn-live.actionDB]
+    [beatfn-live.DB]
     [beatfn-live.ledAssertions]
     [beatfn-live.launchpad :only [draw-grid]]
     [beatfn-live.utilities]))
@@ -16,23 +16,23 @@
 ;
 
 ; TODO: make these the same button, sohould be easy with y*-1 or something
-(defn zoom-state-button-up
+(defn step-size-button-up
   [x y pressed?]
     (if pressed?
       (let [scalar 0.5]
-        (swap! zoom-state #(clamp (* scalar %) MIN_STEP MAX_ZOOM))
+        (swap! step-size #(clamp (* scalar %) MIN_STEP MAX_STEP))
         (draw-grid lpad x y :green :high)
         (assert-grid-leds))
-    (assert-zoom-state-leds)))
+    (assert-step-size-leds)))
 
-(defn zoom-state-button-down
+(defn step-size-button-down
   [x y pressed?]
     (if pressed?
       (let [scalar 2]
-        (swap! zoom-state #(clamp (* scalar %) MIN_STEP MAX_ZOOM))
+        (swap! step-size #(clamp (* scalar %) MIN_STEP MAX_STEP))
         (draw-grid lpad x y :red :high)
         (assert-grid-leds))
-    (assert-zoom-state-leds)))
+    (assert-step-size-leds)))
 
 (defn bank-state-button
   [x y pressed?]

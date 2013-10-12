@@ -1,7 +1,7 @@
 (ns beatfn-live.utilities
   (:use
     [beatfn-live.globals]
-    [beatfn-live.actionDB]
+    [beatfn-live.DB]
     [beatfn-live.launchpad :only [draw-grid]]))
 
 ;
@@ -23,14 +23,14 @@
   (doall (apply map args)))
 
 (defn mod-beat-max [beat]
-  (mod beat (* LAUNCHPAD_AREA @zoom-state)))
-  ;(mod beat (* MAX_ZOOM LAUNCHPAD_AREA)))
+  (mod beat (* LAUNCHPAD_AREA @step-size)))
+  ;(mod beat (* MAX_STEP LAUNCHPAD_AREA)))
 
 (defn mod-beat-zoom [beat]
-  (mod beat (* LAUNCHPAD_AREA @zoom-state)))
+  (mod beat (* LAUNCHPAD_AREA @step-size)))
 
 (defn get-beat-event [raw-beat]
-  (str "beat-event" (mod-beat-max raw-beat)))
+  (str "beat-event" (double (mod-beat-max raw-beat))))
 
 (defn get-action-handle
   [scheduled-action]
@@ -74,10 +74,10 @@
 
 (defn xy->beat [x y]
   (let [beat (+ (* y LAUNCHPAD_LENGTH) x)]
-    (* beat @zoom-state)))
+    (* beat @step-size)))
 
 (defn beat->xy [raw-beat]
-  (let [beat (/ (mod-beat-zoom raw-beat) @zoom-state)
+  (let [beat (/ (mod-beat-zoom raw-beat) @step-size)
         x (mod beat LAUNCHPAD_LENGTH)
         y (/ (- beat x) LAUNCHPAD_LENGTH)]
     [(int x) (int y)]))

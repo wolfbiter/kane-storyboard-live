@@ -24,7 +24,6 @@
     (assert-tracker-led raw-beat)
     (event (get-beat-event raw-beat))))
 
-; TODO: debug why the start is 1 beat off and feels wrong
 (defn start-storyboard
   ([] (start-storyboard 0 0))
   ([x y]
